@@ -1,3929 +1,605 @@
-/* ==========================================================
-   WORLD PULSE
-   APP.JS
-   PART 1
-   CORE ENGINE
-========================================================== */
+// ════════════════════════════════════════
+// WORLD PULSE · app.js
+// Three.js 3D football + live scores + all interactions
+// ════════════════════════════════════════
 
-"use strict";
+// ── DATA ────────────────────────────────
+const FLAGS = {
+  Mexico:'🇲🇽','South Africa':'🇿🇦','Korea Republic':'🇰🇷',Czechia:'🇨🇿',
+  Switzerland:'🇨🇭',Canada:'🇨🇦','Bosnia and Herzegovina':'🇧🇦',Qatar:'🇶🇦',
+  Brazil:'🇧🇷',Morocco:'🇲🇦',Scotland:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',Haiti:'🇭🇹',USA:'🇺🇸',
+  Australia:'🇦🇺',Paraguay:'🇵🇾',Türkiye:'🇹🇷',Turkey:'🇹🇷',Germany:'🇩🇪',
+  'Ivory Coast':'🇨🇮',Ecuador:'🇪🇨','Curaçao':'🇨🇼',Netherlands:'🇳🇱',Japan:'🇯🇵',
+  Sweden:'🇸🇪',Tunisia:'🇹🇳',Belgium:'🇧🇪',Egypt:'🇪🇬','IR Iran':'🇮🇷',Iran:'🇮🇷',
+  'New Zealand':'🇳🇿',Spain:'🇪🇸','Cape Verde':'🇨🇻',Uruguay:'🇺🇾','Saudi Arabia':'🇸🇦',
+  France:'🇫🇷',Norway:'🇳🇴',Senegal:'🇸🇳',Iraq:'🇮🇶',Argentina:'🇦🇷',Austria:'🇦🇹',
+  Algeria:'🇩🇿',Jordan:'🇯🇴',Colombia:'🇨🇴',Portugal:'🇵🇹','Congo DR':'🇨🇩',
+  Uzbekistan:'🇺🇿',England:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',Croatia:'🇭🇷',Ghana:'🇬🇭',Panama:'🇵🇦',
+  Poland:'🇵🇱',Romania:'🇷🇴',Serbia:'🇷🇸',Ukraine:'🇺🇦'
+};
+const F = n => FLAGS[n] || '🏳';
+const A = n => (n||'').split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
 
-/* ==========================================================
-   DOM
-========================================================== */
-
-const $ = (selector) => document.querySelector(selector);
-
-const $$ = (selector) => document.querySelectorAll(selector);
-
-/* ==========================================================
-   ELEMENTS
-========================================================== */
-
-const loader = $(".page-loader");
-
-const liveClock = $("#liveClock");
-
-const matchCounter = $("#matchCounter");
-
-const goalCounter = $("#goalCounter");
-
-const searchInput = $("#search");
-
-const themeToggle = $("#themeToggle");
-
-const cardsContainer = $("#liveCards");
-
-const fixtureContainer = $("#fixturesList");
-
-/* ==========================================================
-   GLOBAL STATE
-========================================================== */
-
-const state = {
-
-theme: localStorage.getItem("theme") || "dark",
-
-matches: [],
-
-fixtures: [],
-
-filtered: []
-
+const GROUPS = {
+  A:[{t:'Mexico',w:3,d:0,l:0,pts:9},{t:'South Africa',w:1,d:1,l:1,pts:4},{t:'Korea Republic',w:1,d:0,l:2,pts:3},{t:'Czechia',w:0,d:1,l:2,pts:1}],
+  B:[{t:'Switzerland',w:2,d:1,l:0,pts:7},{t:'Canada',w:1,d:1,l:1,pts:4},{t:'Bosnia and Herzegovina',w:1,d:1,l:1,pts:4},{t:'Qatar',w:0,d:1,l:2,pts:1}],
+  C:[{t:'Brazil',w:2,d:1,l:0,pts:7},{t:'Morocco',w:2,d:1,l:0,pts:7},{t:'Scotland',w:1,d:0,l:2,pts:3},{t:'Haiti',w:0,d:0,l:3,pts:0}],
+  D:[{t:'USA',w:2,d:0,l:1,pts:6},{t:'Australia',w:1,d:1,l:1,pts:4},{t:'Paraguay',w:1,d:1,l:1,pts:4},{t:'Türkiye',w:1,d:0,l:2,pts:3}],
+  E:[{t:'Germany',w:2,d:0,l:1,pts:6},{t:'Ivory Coast',w:2,d:0,l:1,pts:6},{t:'Ecuador',w:1,d:1,l:1,pts:4},{t:'Curaçao',w:0,d:1,l:2,pts:1}],
+  F:[{t:'Netherlands',w:2,d:1,l:0,pts:7},{t:'Japan',w:1,d:2,l:0,pts:5},{t:'Sweden',w:1,d:1,l:1,pts:4},{t:'Tunisia',w:0,d:0,l:3,pts:0}],
+  G:[{t:'Belgium',w:1,d:2,l:0,pts:5},{t:'Egypt',w:1,d:2,l:0,pts:5},{t:'IR Iran',w:0,d:3,l:0,pts:3},{t:'New Zealand',w:0,d:1,l:2,pts:1}],
+  H:[{t:'Spain',w:2,d:1,l:0,pts:7},{t:'Cape Verde',w:0,d:3,l:0,pts:3},{t:'Uruguay',w:0,d:2,l:1,pts:2},{t:'Saudi Arabia',w:0,d:2,l:1,pts:2}],
+  I:[{t:'France',w:3,d:0,l:0,pts:9},{t:'Norway',w:2,d:0,l:1,pts:6},{t:'Senegal',w:1,d:0,l:2,pts:3},{t:'Iraq',w:0,d:0,l:3,pts:0}],
+  J:[{t:'Argentina',w:3,d:0,l:0,pts:9},{t:'Austria',w:1,d:1,l:1,pts:4},{t:'Algeria',w:1,d:1,l:1,pts:4},{t:'Jordan',w:0,d:0,l:3,pts:0}],
+  K:[{t:'Colombia',w:2,d:1,l:0,pts:7},{t:'Portugal',w:1,d:2,l:0,pts:5},{t:'Congo DR',w:1,d:1,l:1,pts:4},{t:'Uzbekistan',w:0,d:0,l:3,pts:0}],
+  L:[{t:'England',w:2,d:1,l:0,pts:7},{t:'Croatia',w:2,d:0,l:1,pts:6},{t:'Ghana',w:1,d:1,l:1,pts:4},{t:'Panama',w:0,d:0,l:3,pts:0}],
 };
 
-/* ==========================================================
-   INIT
-========================================================== */
-
-window.addEventListener("DOMContentLoaded", init);
-
-function init(){
-
-loadTheme();
-
-createBackgroundParticles();
-
-startClock();
-
-animateNumbers();
-
-loadData();
-
-setupEvents();
-
-hideLoader();
-
-}
-
-/* ==========================================================
-   LOADER
-========================================================== */
-
-function hideLoader(){
-
-setTimeout(()=>{
-
-loader.style.opacity="0";
-
-loader.style.pointerEvents="none";
-
-setTimeout(()=>{
-
-loader.remove();
-
-},800);
-
-},1200);
-
-}
-
-/* ==========================================================
-   THEME
-========================================================== */
-
-function loadTheme(){
-
-document.body.classList.remove("light","oled");
-
-document.body.classList.add(state.theme);
-
-}
-
-themeToggle?.addEventListener("click",()=>{
-
-if(state.theme==="dark"){
-
-state.theme="light";
-
-themeToggle.textContent="☀️";
-
-}
-
-else if(state.theme==="light"){
-
-state.theme="oled";
-
-themeToggle.textContent="🖤";
-
-}
-
-else{
-
-state.theme="dark";
-
-themeToggle.textContent="🌙";
-
-}
-
-document.body.classList.remove("light","oled");
-
-if(state.theme!=="dark"){
-
-document.body.classList.add(state.theme);
-
-}
-
-localStorage.setItem("theme",state.theme);
-
-});
-
-/* ==========================================================
-   LIVE CLOCK
-========================================================== */
-
-function startClock(){
-
-updateClock();
-
-setInterval(updateClock,1000);
-
-}
-
-function updateClock(){
-
-const now=new Date();
-
-liveClock.textContent=now.toLocaleTimeString([],{
-
-hour:"2-digit",
-
-minute:"2-digit"
-
-});
-
-}
-
-/* ==========================================================
-   COUNT UP
-========================================================== */
-
-function animateValue(el,end,duration=1800){
-
-let start=0;
-
-const step=end/(duration/16);
-
-const timer=setInterval(()=>{
-
-start+=step;
-
-if(start>=end){
-
-start=end;
-
-clearInterval(timer);
-
-}
-
-el.textContent=Math.floor(start).toLocaleString();
-
-},16);
-
-}
-
-function animateNumbers(){
-
-if(matchCounter)
-
-animateValue(matchCounter,104);
-
-if(goalCounter)
-
-animateValue(goalCounter,128);
-
-}
-
-/* ==========================================================
-   SAMPLE DATA
-========================================================== */
-
-state.matches=[
-
-{
-
-home:"Argentina",
-
-away:"France",
-
-homeFlag:"assets/flags/argentina.svg",
-
-awayFlag:"assets/flags/france.svg",
-
-homeScore:2,
-
-awayScore:1,
-
-minute:"84'",
-
-stadium:"MetLife Stadium",
-
-status:"LIVE"
-
-},
-
-{
-
-home:"Brazil",
-
-away:"Japan",
-
-homeFlag:"assets/flags/brazil.svg",
-
-awayFlag:"assets/flags/japan.svg",
-
-homeScore:3,
-
-awayScore:0,
-
-minute:"72'",
-
-stadium:"SoFi Stadium",
-
-status:"LIVE"
-
-},
-
-{
-
-home:"England",
-
-away:"Portugal",
-
-homeFlag:"assets/flags/england.svg",
-
-awayFlag:"assets/flags/portugal.svg",
-
-homeScore:1,
-
-awayScore:0,
-
-minute:"61'",
-
-stadium:"AT&T Stadium",
-
-status:"LIVE"
-
-}
-
+// Round of 32 bracket (current confirmed)
+const BRACKET = [
+  {home:'Argentina',hScore:3,away:'Jordan',aScore:1,date:'28 Jun'},
+  {home:'Colombia',hScore:0,away:'Portugal',aScore:0,date:'28 Jun'},
+  {home:'England',hScore:2,away:'Panama',aScore:0,date:'28 Jun'},
+  {home:'Croatia',hScore:2,away:'Ghana',aScore:1,date:'28 Jun'},
+  {home:'France',hScore:null,away:'Sweden',aScore:null,date:'1 Jul'},
+  {home:'Norway',hScore:null,away:'Senegal',aScore:null,date:'2 Jul'},
+  {home:'Mexico',hScore:null,away:'Ecuador',aScore:null,date:'1 Jul'},
+  {home:'Switzerland',hScore:null,away:'Canada',aScore:null,date:'2 Jul'},
+  {home:'Brazil',hScore:null,away:'Japan',aScore:null,date:'29 Jun'},
+  {home:'Morocco',hScore:null,away:'Scotland',aScore:null,date:'30 Jun'},
+  {home:'Spain',hScore:null,away:'Austria',aScore:null,date:'3 Jul'},
+  {home:'Cape Verde',hScore:null,away:'Saudi Arabia',aScore:null,date:'3 Jul'},
+  {home:'Germany',hScore:null,away:'Paraguay',aScore:null,date:'30 Jun'},
+  {home:'Netherlands',hScore:null,away:'Morocco',aScore:null,date:'30 Jun'},
+  {home:'USA',hScore:null,away:'Bosnia and Herzegovina',aScore:null,date:'2 Jul'},
+  {home:'Belgium',hScore:null,away:'Egypt',aScore:null,date:'2 Jul'},
 ];
 
-state.fixtures=[
-
-{
-
-home:"Spain",
-
-away:"Germany",
-
-date:"Tomorrow",
-
-time:"20:30",
-
-stadium:"BC Place"
-
-},
-
-{
-
-home:"USA",
-
-away:"Mexico",
-
-date:"Friday",
-
-time:"19:00",
-
-stadium:"Azteca"
-
-},
-
-{
-
-home:"Italy",
-
-away:"Netherlands",
-
-date:"Saturday",
-
-time:"22:00",
-
-stadium:"Mercedes-Benz"
-
-}
-
+const FIXTURES = [
+  {home:'Brazil',away:'Japan',time:'29 Jun · 10:30 PM IST',ph:57,pa:18},
+  {home:'Germany',away:'Paraguay',time:'30 Jun · 2:00 AM IST',ph:71,pa:11},
+  {home:'Netherlands',away:'Morocco',time:'30 Jun · 6:30 AM IST',ph:42,pa:28},
+  {home:'Ivory Coast',away:'Norway',time:'30 Jun · 10:30 PM IST',ph:26,pa:47},
+  {home:'France',away:'Sweden',time:'1 Jul · 2:30 AM IST',ph:77,pa:9},
+  {home:'Mexico',away:'Ecuador',time:'1 Jul · 6:30 AM IST',ph:43,pa:25},
+  {home:'England',away:'Congo DR',time:'1 Jul · 9:30 PM IST',ph:76,pa:8},
+  {home:'Belgium',away:'Senegal',time:'2 Jul · 1:30 AM IST',ph:44,pa:27},
+  {home:'USA',away:'Bosnia and Herzegovina',time:'2 Jul · 5:30 AM IST',ph:72,pa:10},
+  {home:'Spain',away:'Austria',time:'3 Jul · 12:30 AM IST',ph:74,pa:9},
 ];
 
-/* ==========================================================
-   LOAD
-========================================================== */
+const STADIUMS = [
+  {name:'MetLife Stadium',city:'New Jersey, USA',cap:'82,500',matches:'8',role:'FINAL VENUE',icon:'🏟️'},
+  {name:'SoFi Stadium',city:'Los Angeles, USA',cap:'70,240',matches:'7',role:'SEMI FINAL',icon:'🏟️'},
+  {name:'Estadio Azteca',city:'Mexico City, MX',cap:'87,523',matches:'5',role:'OPENING MATCH',icon:'🏟️'},
+  {name:'AT&T Stadium',city:'Dallas, USA',cap:'80,000',matches:'6',role:'QUARTER FINAL',icon:'🏟️'},
+  {name:'BC Place',city:'Vancouver, CAN',cap:'54,500',matches:'6',role:'SEMI FINAL',icon:'🏟️'},
+  {name:'BMO Field',city:'Toronto, CAN',cap:'45,736',matches:'6',role:'GROUP STAGE',icon:'🏟️'},
+];
 
-function loadData(){
+const FALLBACK_SCORES = [
+  {home:'CPV',away:'KSA',sH:0,sA:0,date:'27 Jun',status:'Full Time',live:false},
+  {home:'NZL',away:'BEL',sH:1,sA:5,date:'27 Jun',status:'Full Time',live:false},
+  {home:'EGY',away:'IRN',sH:1,sA:1,date:'27 Jun',status:'Full Time',live:false},
+  {home:'PAN',away:'ENG',sH:0,sA:2,date:'28 Jun',status:'Full Time',live:false},
+  {home:'CRO',away:'GHA',sH:2,sA:1,date:'28 Jun',status:'Full Time',live:false},
+  {home:'COL',away:'POR',sH:0,sA:0,date:'28 Jun',status:'Full Time',live:false},
+  {home:'COD',away:'UZB',sH:3,sA:1,date:'28 Jun',status:'Full Time',live:false},
+  {home:'JOR',away:'ARG',sH:1,sA:3,date:'28 Jun',status:'Full Time',live:false},
+  {home:'DZA',away:'AUT',sH:3,sA:3,date:'28 Jun',status:'Full Time',live:false},
+  {home:'RSA',away:'CAN',sH:0,sA:1,date:'29 Jun',status:'Full Time',live:false},
+];
 
-renderMatches(state.matches);
+// ── THREE.JS FOOTBALL ────────────────────
+function initThree() {
+  const canvas = document.getElementById('threeCanvas');
+  if (!canvas || !window.THREE) return;
 
-renderFixtures(state.fixtures);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setClearColor(0x000000, 0);
 
-}
+  const scene = new THREE.Scene();
 
-/* ==========================================================
-   EVENTS
-========================================================== */
+  const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+  camera.position.set(0, 0, 5);
 
-function setupEvents(){
+  // Lights
+  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambient);
+  const key = new THREE.PointLight(0x00d97e, 3, 20);
+  key.position.set(4, 4, 4);
+  scene.add(key);
+  const fill = new THREE.PointLight(0x4299ff, 1.5, 20);
+  fill.position.set(-4, -2, 3);
+  scene.add(fill);
+  const rim = new THREE.PointLight(0xffffff, 1, 20);
+  rim.position.set(0, -4, -3);
+  scene.add(rim);
 
-searchInput?.addEventListener("input",searchMatches);
+  // Football group
+  const group = new THREE.Group();
+  scene.add(group);
 
-window.addEventListener("scroll",handleScroll);
+  // Main sphere
+  const geo = new THREE.SphereGeometry(1.5, 64, 64);
+  const mat = new THREE.MeshPhongMaterial({
+    color: 0xf5f5f5,
+    shininess: 80,
+    specular: new THREE.Color(0.3, 0.3, 0.3),
+  });
+  const ball = new THREE.Mesh(geo, mat);
+  group.add(ball);
 
-}
+  // Pentagon patches (approximated with icosahedron faces)
+  const patchMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 40 });
+  const pentagonPositions = [
+    [0,1.5,0], [0,-1.5,0],
+    [1.43,0.5,0], [-1.43,0.5,0],
+    [1.43,-0.5,0], [-1.43,-0.5,0],
+    [0,0.5,1.43], [0,-0.5,1.43],
+    [0,0.5,-1.43], [0,-0.5,-1.43],
+    [1.0,0,1.05], [-1.0,0,1.05],
+  ];
+  pentagonPositions.forEach(([x,y,z]) => {
+    const pg = new THREE.CircleGeometry(0.34, 5);
+    const pm = new THREE.Mesh(pg, patchMat);
+    const dir = new THREE.Vector3(x,y,z).normalize();
+    pm.position.copy(dir.clone().multiplyScalar(1.52));
+    pm.lookAt(dir.multiplyScalar(10));
+    group.add(pm);
+  });
 
-/* ==========================================================
-   SCROLL NAVBAR
-========================================================== */
+  // Outer glow ring
+  const ringGeo = new THREE.TorusGeometry(2.0, 0.04, 16, 100);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0x00d97e, transparent: true, opacity: 0.25 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2;
+  group.add(ring);
 
-function handleScroll(){
+  // Second ring
+  const ring2 = new THREE.Mesh(
+    new THREE.TorusGeometry(2.4, 0.02, 16, 100),
+    new THREE.MeshBasicMaterial({ color: 0x4299ff, transparent: true, opacity: 0.12 })
+  );
+  ring2.rotation.x = Math.PI / 4;
+  group.add(ring2);
 
-const nav=document.querySelector(".navbar");
-
-if(window.scrollY>50){
-
-nav.classList.add("scrolled");
-
-}else{
-
-nav.classList.remove("scrolled");
-
-}
-
-}
-
-/* ==========================================================
-   PARTICLES
-========================================================== */
-
-function createBackgroundParticles(){
-
-const container=document.createElement("div");
-
-container.className="particles";
-
-document.body.append(container);
-
-for(let i=0;i<45;i++){
-
-const p=document.createElement("span");
-
-p.className="particle";
-
-p.style.left=Math.random()*100+"%";
-
-p.style.animationDuration=
-
-12+Math.random()*18+"s";
-
-p.style.animationDelay=
-
-Math.random()*10+"s";
-
-p.style.opacity=Math.random();
-
-container.appendChild(p);
-
-}
-
+  // Particle field around ball
+  const pCount = 200;
+  const pPositions = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount; i++) {
+    const r = 2.2 + Math.random() * 2.5;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    pPositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    pPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    pPositions[i*3+2] = r * Math.cos(phi);
   }
-/* ==========================================================
-   APP.JS
-   PART 2
-   RENDER ENGINE
-========================================================== */
-
-/* ==========================================================
-   RENDER LIVE MATCHES
-========================================================== */
-
-function renderMatches(matches){
-
-if(!cardsContainer) return;
-
-cardsContainer.innerHTML="";
-
-matches.forEach(match=>{
-
-const card=document.createElement("article");
-
-card.className="match-card reveal";
-
-card.innerHTML=`
-
-<div class="match-glow"></div>
-
-<div class="card-status">
-
-<div class="live-pill">
-
-${match.status}
-
-</div>
-
-<div class="match-time">
-
-${match.minute}
-
-</div>
-
-</div>
-
-<div class="card-teams">
-
-<div class="card-team">
-
-<img src="${match.homeFlag}" alt="${match.home}">
-
-<h3>
-
-${match.home}
-
-</h3>
-
-</div>
-
-<div class="card-score">
-
-<span>${match.homeScore}</span>
-
--
-
-<span>${match.awayScore}</span>
-
-</div>
-
-<div class="card-team">
-
-<img src="${match.awayFlag}" alt="${match.away}">
-
-<h3>
-
-${match.away}
-
-</h3>
-
-</div>
-
-</div>
-
-<div class="card-footer">
-
-<div class="info-box">
-
-<h4>
-
-${match.minute}
-
-</h4>
-
-<p>
-
-Minute
-
-</p>
-
-</div>
-
-<div class="info-box">
-
-<h4>
-
-LIVE
-
-</h4>
-
-<p>
-
-Status
-
-</p>
-
-</div>
-
-<div class="info-box">
-
-<h4>
-
-${match.stadium}
-
-</h4>
-
-<p>
-
-Venue
-
-</p>
-
-</div>
-
-</div>
-
-`;
-
-cardsContainer.appendChild(card);
-
-});
-
-activateReveal();
-
-}
-
-/* ==========================================================
-   FIXTURES
-========================================================== */
-
-function renderFixtures(fixtures){
-
-if(!fixtureContainer) return;
-
-fixtureContainer.innerHTML="";
-
-fixtures.forEach(match=>{
-
-const card=document.createElement("article");
-
-card.className="fixture-card reveal";
-
-card.innerHTML=`
-
-<div class="fixture-top">
-
-<div class="fixture-date">
-
-${match.date}
-
-</div>
-
-<div class="fixture-stadium">
-
-${match.stadium}
-
-</div>
-
-</div>
-
-<div class="fixture-teams">
-
-<div class="fixture-team">
-
-<h3>
-
-${match.home}
-
-</h3>
-
-</div>
-
-<div class="fixture-vs">
-
-VS
-
-</div>
-
-<div class="fixture-team">
-
-<h3>
-
-${match.away}
-
-</h3>
-
-</div>
-
-</div>
-
-<div class="fixture-bottom">
-
-<div class="fixture-countdown">
-
-Kick Off
-
-${match.time}
-
-</div>
-
-<button class="fixture-watch">
-
-Details
-
-</button>
-
-</div>
-
-`;
-
-fixtureContainer.appendChild(card);
-
-});
-
-activateReveal();
-
-}
-
-/* ==========================================================
-   SEARCH
-========================================================== */
-
-function searchMatches(e){
-
-const keyword=e.target.value.toLowerCase();
-
-const filtered=state.matches.filter(match=>{
-
-return(
-
-match.home.toLowerCase().includes(keyword)
-
-||
-
-match.away.toLowerCase().includes(keyword)
-
-||
-
-match.stadium.toLowerCase().includes(keyword)
-
-);
-
-});
-
-renderMatches(filtered);
-
-}
-
-/* ==========================================================
-   SCROLL REVEAL
-========================================================== */
-
-const observer=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.classList.add("active");
-
-}
-
-});
-
-},{
-
-threshold:.15
-
-});
-
-function activateReveal(){
-
-document
-
-.querySelectorAll(".reveal")
-
-.forEach(el=>{
-
-observer.observe(el);
-
-});
-
-}
-
-/* ==========================================================
-   LIVE SCORE ANIMATION
-========================================================== */
-
-setInterval(()=>{
-
-const scores=document.querySelectorAll(".card-score");
-
-scores.forEach(score=>{
-
-score.animate([
-
-{
-
-transform:"scale(1)"
-
-},
-
-{
-
-transform:"scale(1.08)"
-
-},
-
-{
-
-transform:"scale(1)"
-
-}
-
-],{
-
-duration:600
-
-});
-
-});
-
-},5000);
-
-/* ==========================================================
-   RANDOM LIVE MINUTES
-========================================================== */
-
-setInterval(()=>{
-
-state.matches.forEach(match=>{
-
-let minute=parseInt(match.minute);
-
-if(minute<90){
-
-minute++;
-
-match.minute=minute+"'";
-
-}
-
-});
-
-renderMatches(state.matches);
-
-},60000);
-
-/* ==========================================================
-   APP.JS
-   PART 3
-   GROUPS • MODALS • BACK TO TOP • UI ENGINE
-========================================================== */
-
-/* ==========================================================
-   GROUP DATA
-========================================================== */
-
-const groups={
-
-A:[
-
-{team:"Argentina",flag:"🇦🇷",p:3,w:3,d:0,l:0,gf:8,ga:2,pts:9,form:["W","W","W"]},
-
-{team:"Mexico",flag:"🇲🇽",p:3,w:2,d:0,l:1,gf:5,ga:3,pts:6,form:["W","L","W"]},
-
-{team:"Japan",flag:"🇯🇵",p:3,w:1,d:0,l:2,gf:3,ga:5,pts:3,form:["L","W","L"]},
-
-{team:"Egypt",flag:"🇪🇬",p:3,w:0,d:0,l:3,gf:1,ga:7,pts:0,form:["L","L","L"]}
-
-],
-
-B:[
-
-{team:"France",flag:"🇫🇷",p:3,w:3,d:0,l:0,gf:9,ga:1,pts:9,form:["W","W","W"]},
-
-{team:"Belgium",flag:"🇧🇪",p:3,w:2,d:0,l:1,gf:7,ga:4,pts:6,form:["W","L","W"]},
-
-{team:"Canada",flag:"🇨🇦",p:3,w:1,d:0,l:2,gf:2,ga:5,pts:3,form:["L","W","L"]},
-
-{team:"Morocco",flag:"🇲🇦",p:3,w:0,d:0,l:3,gf:2,ga:10,pts:0,form:["L","L","L"]}
-
-]
-
-};
-
-/* ==========================================================
-   GROUP TABLE
-========================================================== */
-
-const groupTabs=$("#groupTabs");
-
-const groupPanel=$("#groupPanel");
-
-function initGroups(){
-
-if(!groupTabs||!groupPanel)return;
-
-groupTabs.innerHTML="";
-
-Object.keys(groups).forEach((group,index)=>{
-
-const btn=document.createElement("button");
-
-btn.textContent="Group "+group;
-
-if(index===0)btn.classList.add("active");
-
-btn.onclick=()=>{
-
-$$(".group-tabs button").forEach(b=>b.classList.remove("active"));
-
-btn.classList.add("active");
-
-renderGroup(group);
-
-};
-
-groupTabs.appendChild(btn);
-
-});
-
-renderGroup("A");
-
-}
-
-function renderGroup(letter){
-
-const teams=groups[letter];
-
-groupPanel.innerHTML=`
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Team</th>
-
-<th>P</th>
-
-<th>W</th>
-
-<th>D</th>
-
-<th>L</th>
-
-<th>GF</th>
-
-<th>GA</th>
-
-<th>Pts</th>
-
-<th>Form</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-${teams.map(team=>`
-
-<tr>
-
-<td class="team-cell">
-
-<span>${team.flag}</span>
-
-${team.team}
-
-</td>
-
-<td>${team.p}</td>
-
-<td>${team.w}</td>
-
-<td>${team.d}</td>
-
-<td>${team.l}</td>
-
-<td>${team.gf}</td>
-
-<td>${team.ga}</td>
-
-<td><strong>${team.pts}</strong></td>
-
-<td>
-
-<div class="form">
-
-${team.form.map(result=>`
-
-<span class="${
-
-result==="W"
-
-?"win"
-
-:result==="D"
-
-?"draw"
-
-:"loss"
-
-}">
-
-</span>
-
-`).join("")}
-
-</div>
-
-</td>
-
-</tr>
-
-`).join("")}
-
-</tbody>
-
-</table>
-
-`;
-
-}
-
-/* ==========================================================
-   MATCH MODAL
-========================================================== */
-
-const modal=document.createElement("div");
-
-modal.className="match-modal";
-
-modal.innerHTML=`
-
-<div class="modal-box">
-
-<button class="close-modal">
-
-✕
-
-</button>
-
-<div id="modalContent"></div>
-
-</div>
-
-`;
-
-document.body.appendChild(modal);
-
-document.addEventListener("click",e=>{
-
-const card=e.target.closest(".match-card");
-
-if(card){
-
-const team=
-
-card.querySelector("h3").textContent;
-
-openModal(team);
-
-}
-
-});
-
-function openModal(team){
-
-$("#modalContent").innerHTML=`
-
-<h2>
-
-${team}
-
-</h2>
-
-<p>
-
-Detailed statistics coming in future updates.
-
-</p>
-
-<div class="player-row">
-
-<span>
-
-Possession
-
-</span>
-
-<strong>
-
-61%
-
-</strong>
-
-</div>
-
-<div class="player-row">
-
-<span>
-
-Shots
-
-</span>
-
-<strong>
-
-14
-
-</strong>
-
-</div>
-
-<div class="player-row">
-
-<span>
-
-Corners
-
-</span>
-
-<strong>
-
-8
-
-</strong>
-
-</div>
-
-`;
-
-modal.classList.add("show");
-
-}
-
-modal.addEventListener("click",e=>{
-
-if(
-
-e.target===modal||
-
-e.target.classList.contains("close-modal")
-
-){
-
-modal.classList.remove("show");
-
-}
-
-});
-
-/* ==========================================================
-   BACK TO TOP
-========================================================== */
-
-const backTop=document.createElement("div");
-
-backTop.className="back-top";
-
-backTop.innerHTML="↑";
-
-document.body.appendChild(backTop);
-
-window.addEventListener("scroll",()=>{
-
-if(window.scrollY>700){
-
-backTop.classList.add("show");
-
-}else{
-
-backTop.classList.remove("show");
-
-}
-
-});
-
-backTop.onclick=()=>{
-
-window.scrollTo({
-
-top:0,
-
-behavior:"smooth"
-
-});
-
-};
-
-/* ==========================================================
-   NAV ACTIVE
-========================================================== */
-
-const sections=document.querySelectorAll("section[id]");
-
-window.addEventListener("scroll",()=>{
-
-let current="";
-
-sections.forEach(section=>{
-
-const top=section.offsetTop-120;
-
-if(scrollY>=top){
-
-current=section.id;
-
-}
-
-});
-
-document
-
-.querySelectorAll("nav a")
-
-.forEach(link=>{
-
-link.classList.remove("active");
-
-if(
-
-link.getAttribute("href")==="#"+current
-
-){
-
-link.classList.add("active");
-
-}
-
-});
-
-});
-
-/* ==========================================================
-   START
-========================================================== */
-
-initGroups();
-
-/* ==========================================================
-   APP.JS
-   PART 4
-   PREMIUM INTERACTIONS
-========================================================== */
-
-/* ==========================================================
-   CUSTOM CURSOR
-========================================================== */
-
-const cursor=$(".cursor");
-
-const cursorBlur=$(".cursor-blur");
-
-document.addEventListener("mousemove",(e)=>{
-
-cursor.style.left=e.clientX+"px";
-cursor.style.top=e.clientY+"px";
-
-cursorBlur.animate({
-
-left:e.clientX-120+"px",
-
-top:e.clientY-120+"px"
-
-},{
-
-duration:350,
-
-fill:"forwards"
-
-});
-
-});
-
-document.querySelectorAll(
-
-"a,button,.match-card,.fixture-card,.player-card,.news-card,.stadium-card,.city-item"
-
-).forEach(item=>{
-
-item.addEventListener("mouseenter",()=>{
-
-cursor.style.transform="scale(2)";
-
-});
-
-item.addEventListener("mouseleave",()=>{
-
-cursor.style.transform="scale(1)";
-
-});
-
-});
-
-/* ==========================================================
-   MAGNET BUTTON
-========================================================== */
-
-document.querySelectorAll(
-
-".primary-btn,.secondary-btn,.fixture-watch"
-
-).forEach(button=>{
-
-button.addEventListener("mousemove",(e)=>{
-
-const rect=button.getBoundingClientRect();
-
-const x=e.clientX-rect.left-rect.width/2;
-
-const y=e.clientY-rect.top-rect.height/2;
-
-button.style.transform=
-
-`translate(${x*.15}px,${y*.15}px)`;
-
-});
-
-button.addEventListener("mouseleave",()=>{
-
-button.style.transform="";
-
-});
-
-});
-
-/* ==========================================================
-   RIPPLE
-========================================================== */
-
-document.querySelectorAll("button").forEach(button=>{
-
-button.addEventListener("click",function(e){
-
-const ripple=document.createElement("span");
-
-const size=Math.max(
-
-this.clientWidth,
-
-this.clientHeight
-
-);
-
-const rect=this.getBoundingClientRect();
-
-ripple.style.width=size+"px";
-
-ripple.style.height=size+"px";
-
-ripple.style.left=
-
-e.clientX-rect.left-size/2+"px";
-
-ripple.style.top=
-
-e.clientY-rect.top-size/2+"px";
-
-this.classList.add("btn-ripple");
-
-this.appendChild(ripple);
-
-setTimeout(()=>{
-
-ripple.remove();
-
-},700);
-
-});
-
-});
-
-/* ==========================================================
-   PARALLAX HERO
-========================================================== */
-
-const hero=$(".hero");
-
-window.addEventListener("mousemove",(e)=>{
-
-if(!hero)return;
-
-const x=(e.clientX/window.innerWidth-.5)*20;
-
-const y=(e.clientY/window.innerHeight-.5)*20;
-
-hero.style.backgroundPosition=
-
-`${50+x}% ${50+y}%`;
-
-});
-
-/* ==========================================================
-   FLOATING HERO LIGHTS
-========================================================== */
-
-document.querySelectorAll(".hero-light")
-
-.forEach((light,index)=>{
-
-setInterval(()=>{
-
-const x=Math.random()*60-30;
-
-const y=Math.random()*60-30;
-
-light.animate([
-
-{
-
-transform:"translate(0,0)"
-
-},
-
-{
-
-transform:`translate(${x}px,${y}px)`
-
-},
-
-{
-
-transform:"translate(0,0)"
-
-}
-
-],{
-
-duration:12000+(index*2000),
-
-fill:"forwards"
-
-});
-
-},12000);
-
-});
-
-/* ==========================================================
-   LIVE MATCH RANDOMIZER
-========================================================== */
-
-setInterval(()=>{
-
-state.matches.forEach(match=>{
-
-if(Math.random()>.75){
-
-if(Math.random()>.5){
-
-match.homeScore++;
-
-}else{
-
-match.awayScore++;
-
-}
-
-}
-
-});
-
-renderMatches(state.matches);
-
-},45000);
-
-/* ==========================================================
-   TICKER DUPLICATE
-========================================================== */
-
-const ticker=$(".ticker-track");
-
-if(ticker){
-
-ticker.innerHTML+=ticker.innerHTML;
-
-}
-
-/* ==========================================================
-   STAT CARD COUNT
-========================================================== */
-
-const statObserver=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(!entry.isIntersecting)return;
-
-const number=
-
-entry.target.querySelector("h3");
-
-if(!number)return;
-
-const end=
-
-parseInt(
-
-number.textContent.replace(/\D/g,"")
-
-);
-
-if(isNaN(end))return;
-
-let value=0;
-
-const speed=end/90;
-
-const timer=setInterval(()=>{
-
-value+=speed;
-
-if(value>=end){
-
-value=end;
-
-clearInterval(timer);
-
-}
-
-number.textContent=
-
-Math.floor(value).toLocaleString();
-
-},15);
-
-statObserver.unobserve(entry.target);
-
-});
-
-});
-
-document
-
-.querySelectorAll(".stat-card")
-
-.forEach(card=>{
-
-statObserver.observe(card);
-
-});
-
-/* ==========================================================
-   PAGE PROGRESS BAR
-========================================================== */
-
-const progress=document.createElement("div");
-
-progress.className="page-progress";
-
-document.body.appendChild(progress);
-
-window.addEventListener("scroll",()=>{
-
-const height=
-
-document.documentElement.scrollHeight-
-
-window.innerHeight;
-
-const value=
-
-window.scrollY/height*100;
-
-progress.style.width=value+"%";
-
-});
-
-/* ==========================================================
-   KEYBOARD SHORTCUTS
-========================================================== */
-
-document.addEventListener("keydown",(e)=>{
-
-if(e.key==="/"){
-
-e.preventDefault();
-
-searchInput?.focus();
-
-}
-
-if(e.key==="t"){
-
-themeToggle?.click();
-
-}
-
-if(e.key==="Escape"){
-
-modal.classList.remove("show");
-
-}
-
-});
-
-/* ==========================================================
-   CONSOLE MESSAGE
-========================================================== */
-
-console.clear();
-
-console.log(
-
-"%cWORLD PULSE",
-
-"font-size:34px;font-weight:bold;color:#00d8ff;"
-
-);
-
-console.log(
-
-"%cDesigned with ❤️ for football fans.",
-
-"font-size:16px;color:white;"
-
-);
-
-/* ==========================================================
-   APP.JS
-   PART 5
-   ADVANCED FEATURES
-========================================================== */
-
-/* ==========================================================
-   FAVORITE TEAM
-========================================================== */
-
-const favoriteKey="favoriteTeam";
-
-function saveFavorite(team){
-
-localStorage.setItem(favoriteKey,team);
-
-showToast(team+" added to favourites");
-
-}
-
-function getFavorite(){
-
-return localStorage.getItem(favoriteKey);
-
-}
-
-document.addEventListener("dblclick",(e)=>{
-
-const card=e.target.closest(".match-card");
-
-if(!card)return;
-
-const team=
-
-card.querySelector(".card-team h3").textContent;
-
-saveFavorite(team);
-
-});
-
-/* ==========================================================
-   TOAST
-========================================================== */
-
-const toast=document.createElement("div");
-
-toast.className="toast";
-
-document.body.appendChild(toast);
-
-function showToast(message){
-
-toast.textContent=message;
-
-toast.classList.add("show");
-
-clearTimeout(toast.timer);
-
-toast.timer=setTimeout(()=>{
-
-toast.classList.remove("show");
-
-},2500);
-
-}
-
-/* ==========================================================
-   COPY SCORE
-========================================================== */
-
-document.addEventListener("click",(e)=>{
-
-const score=e.target.closest(".card-score");
-
-if(!score)return;
-
-navigator.clipboard.writeText(score.innerText);
-
-showToast("Score copied");
-
-});
-
-/* ==========================================================
-   MATCH FILTER
-========================================================== */
-
-function filterLive(){
-
-renderMatches(
-
-state.matches.filter(match=>
-
-match.status==="LIVE"
-
-)
-
-);
-
-}
-
-function filterFinished(){
-
-renderMatches(
-
-state.matches.filter(match=>
-
-match.status==="FT"
-
-)
-
-);
-
-}
-
-/* ==========================================================
-   RANDOM NEWS
-========================================================== */
-
-const news=[
-
-"Mbappé scores another brace.",
-
-"Attendance breaks tournament record.",
-
-"Brazil qualify for Quarter Finals.",
-
-"England remain unbeaten.",
-
-"Argentina dominate possession rankings.",
-
-"Spain record highest passing accuracy."
-
-];
-
-function randomNews(){
-
-const cards=document.querySelectorAll(".news-card");
-
-cards.forEach(card=>{
-
-const p=card.querySelector("p");
-
-if(!p)return;
-
-p.textContent=
-
-news[Math.floor(Math.random()*news.length)];
-
-});
-
-}
-
-setInterval(randomNews,20000);
-
-/* ==========================================================
-   LIVE TICKER UPDATE
-========================================================== */
-
-const tickerItems=[
-
-"🇦🇷 Argentina 2-1 France",
-
-"🇧🇷 Brazil 3-0 Japan",
-
-"🇪🇸 Spain 2-2 Germany",
-
-"🏴 England 1-0 Portugal",
-
-"🇺🇸 USA 0-0 Mexico",
-
-"🇮🇹 Italy 1-0 Netherlands",
-
-"🏆 FIFA World Cup 2026"
-
-];
-
-function updateTicker(){
-
-const ticker=document.querySelector(".ticker-track");
-
-if(!ticker)return;
-
-ticker.innerHTML="";
-
-tickerItems.forEach(item=>{
-
-const span=document.createElement("span");
-
-span.textContent=item;
-
-ticker.appendChild(span);
-
-});
-
-ticker.innerHTML+=ticker.innerHTML;
-
-}
-
-updateTicker();
-
-/* ==========================================================
-   LIVE STATS
-========================================================== */
-
-function randomStats(){
-
-document
-
-.querySelectorAll(".info-box h4")
-
-.forEach(stat=>{
-
-if(Math.random()>.6){
-
-const value=
-
-parseInt(stat.textContent);
-
-if(!isNaN(value))
-
-stat.textContent=value+1;
-
-}
-
-});
-
-}
-
-setInterval(randomStats,15000);
-
-/* ==========================================================
-   PLAYER IMAGE PARALLAX
-========================================================== */
-
-document
-
-.querySelectorAll(".player-card")
-
-.forEach(card=>{
-
-card.addEventListener("mousemove",(e)=>{
-
-const img=card.querySelector("img");
-
-if(!img)return;
-
-const rect=card.getBoundingClientRect();
-
-const x=(e.clientX-rect.left)/rect.width-.5;
-
-const y=(e.clientY-rect.top)/rect.height-.5;
-
-img.style.transform=
-
-`scale(1.08)
-
-rotateY(${x*18}deg)
-
-rotateX(${-y*18}deg)`;
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-const img=card.querySelector("img");
-
-if(img)
-
-img.style.transform="";
-
-});
-
-});
-
-/* ==========================================================
-   LOADING SKELETON
-========================================================== */
-
-function showSkeleton(container){
-
-container.innerHTML="";
-
-for(let i=0;i<6;i++){
-
-const div=document.createElement("div");
-
-div.className="skeleton-card";
-
-container.appendChild(div);
-
-}
-
-}
-
-function hideSkeleton(){
-
-renderMatches(state.matches);
-
-}
-
-/* ==========================================================
-   INITIAL LOAD
-========================================================== */
-
-showSkeleton(cardsContainer);
-
-setTimeout(hideSkeleton,1200);
-
-/* ==========================================================
-   NETWORK STATUS
-========================================================== */
-
-window.addEventListener("offline",()=>{
-
-showToast("You are offline");
-
-});
-
-window.addEventListener("online",()=>{
-
-showToast("Back online");
-
-});
-
-/* ==========================================================
-   PERFORMANCE
-========================================================== */
-
-window.requestIdleCallback?.(()=>{
-
-console.log(
-
-"Background tasks completed."
-
-);
-
-});
-
-/* ==========================================================
-   END OF PART 5
-========================================================== */
-
-/* ==========================================================
-   APP.JS
-   PART 6
-   ADVANCED UI ENGINE
-========================================================== */
-
-/* ==========================================================
-   STADIUM EXPLORE
-========================================================== */
-
-document.querySelectorAll(".stadium-card button")
-
-.forEach(button=>{
-
-button.addEventListener("click",()=>{
-
-const card=button.closest(".stadium-card");
-
-const name=card.querySelector("h3").textContent;
-
-const city=card.querySelector("p").textContent;
-
-$("#modalContent").innerHTML=`
-
-<h2>
-
-${name}
-
-</h2>
-
-<p>
-
-${city}
-
-</p>
-
-<div class="player-row">
-
-<span>
-
-Capacity
-
-</span>
-
-<strong>
-
-82,500
-
-</strong>
-
-</div>
-
-<div class="player-row">
-
-<span>
-
-Pitch
-
-</span>
-
-<strong>
-
-Natural Grass
-
-</strong>
-
-</div>
-
-<div class="player-row">
-
-<span>
-
-Opened
-
-</span>
-
-<strong>
-
-2010
-
-</strong>
-
-</div>
-
-<div class="player-row">
-
-<span>
-
-Matches
-
-</span>
-
-<strong>
-
-8
-
-</strong>
-
-</div>
-
-`;
-
-modal.classList.add("show");
-
-});
-
-});
-
-/* ==========================================================
-   NEWS AUTO SLIDER
-========================================================== */
-
-let activeNews=0;
-
-function rotateNews(){
-
-const cards=document.querySelectorAll(".news-card");
-
-if(cards.length===0)return;
-
-cards.forEach(card=>{
-
-card.style.opacity=".35";
-
-card.style.transform="scale(.96)";
-
-});
-
-cards[activeNews].style.opacity="1";
-
-cards[activeNews].style.transform="scale(1.03)";
-
-activeNews++;
-
-if(activeNews>=cards.length)
-
-activeNews=0;
-
-}
-
-rotateNews();
-
-setInterval(rotateNews,4500);
-
-/* ==========================================================
-   RANDOM HERO SCORE
-========================================================== */
-
-function updateHeroScore(){
-
-const score=document.querySelector(".score");
-
-if(!score)return;
-
-const home=Math.floor(Math.random()*5);
-
-const away=Math.floor(Math.random()*5);
-
-score.innerHTML=`
-
-<span>
-
-${home}
-
-</span>
-
--
-
-<span>
-
-${away}
-
-</span>
-
-`;
-
-}
-
-setInterval(updateHeroScore,30000);
-
-/* ==========================================================
-   LIVE CLOCK COLOR
-========================================================== */
-
-setInterval(()=>{
-
-const hour=new Date().getHours();
-
-if(hour>=18||hour<=6){
-
-liveClock.style.color="#00d8ff";
-
-}else{
-
-liveClock.style.color="#ffffff";
-
-}
-
-},5000);
-
-/* ==========================================================
-   HERO NUMBER ANIMATION
-========================================================== */
-
-document.querySelectorAll(".number-card")
-
-.forEach(card=>{
-
-card.addEventListener("mouseenter",()=>{
-
-card.animate([
-
-{
-
-transform:"translateY(0)"
-
-},
-
-{
-
-transform:"translateY(-12px) scale(1.05)"
-
-},
-
-{
-
-transform:"translateY(-8px)"
-
-}
-
-],{
-
-duration:500,
-
-fill:"forwards"
-
-});
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.style.transform="";
-
-});
-
-});
-
-/* ==========================================================
-   STAT CARD HOVER GLOW
-========================================================== */
-
-document.querySelectorAll(".stat-card")
-
-.forEach(card=>{
-
-card.addEventListener("mousemove",(e)=>{
-
-const rect=card.getBoundingClientRect();
-
-const x=e.clientX-rect.left;
-
-const y=e.clientY-rect.top;
-
-card.style.background=
-
-`radial-gradient(circle at ${x}px ${y}px,
-
-rgba(0,216,255,.18),
-
-rgba(255,255,255,.05) 65%)`;
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.style.background="";
-
-});
-
-});
-
-/* ==========================================================
-   HERO PARALLAX IMAGE
-========================================================== */
-
-window.addEventListener("scroll",()=>{
-
-const y=window.scrollY;
-
-const hero=document.querySelector(".hero");
-
-if(hero){
-
-hero.style.transform=
-
-`translateY(${y*.18}px)`;
-
-}
-
-});
-
-/* ==========================================================
-   RANDOM ATTENDANCE
-========================================================== */
-
-const attendance=document.querySelectorAll(".stat-card h3")[3];
-
-if(attendance){
-
-setInterval(()=>{
-
-const number=
-
-(3000000+
-
-Math.floor(Math.random()*100000))
-
-.toLocaleString();
-
-attendance.textContent=number;
-
-},8000);
-
-}
-
-/* ==========================================================
-   CONFETTI
-========================================================== */
-
-function launchConfetti(){
-
-for(let i=0;i<120;i++){
-
-const piece=document.createElement("span");
-
-piece.className="confetti";
-
-piece.style.left=Math.random()*100+"vw";
-
-piece.style.background=
-
-`hsl(${Math.random()*360},100%,60%)`;
-
-piece.style.animationDuration=
-
-2+Math.random()*3+"s";
-
-document.body.appendChild(piece);
-
-setTimeout(()=>{
-
-piece.remove();
-
-},5000);
-
-}
-
-}
-
-/* ==========================================================
-   SECRET CODE
-========================================================== */
-
-let keys="";
-
-document.addEventListener("keydown",(e)=>{
-
-keys+=e.key.toLowerCase();
-
-keys=keys.slice(-5);
-
-if(keys==="fifa!"){
-
-launchConfetti();
-
-showToast("🏆 World Champions!");
-
-}
-
-});
-
-/* ==========================================================
-   LAZY IMAGE FADE
-========================================================== */
-
-const imageObserver=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.classList.add("visible");
-
-imageObserver.unobserve(entry.target);
-
-}
-
-});
-
-});
-
-document.querySelectorAll("img")
-
-.forEach(img=>{
-
-imageObserver.observe(img);
-
-});
-
-/* ==========================================================
-   FINAL INITIALIZATION
-========================================================== */
-
-window.addEventListener("load",()=>{
-
-activateReveal();
-
-initGroups();
-
-updateTicker();
-
-});
-
-/* ==========================================================
-   END OF PART 6
-========================================================== */
-/* ==========================================================
-   APP.JS
-   PART 7
-   PREMIUM UX ENGINE
-========================================================== */
-
-/* ==========================================================
-   PAGE VISIBILITY
-========================================================== */
-
-document.addEventListener("visibilitychange",()=>{
-
-if(document.hidden){
-
-document.title="⚽ Come back! Live matches are waiting.";
-
-}else{
-
-document.title="World Pulse | FIFA World Cup 2026";
-
-}
-
-});
-
-/* ==========================================================
-   SMOOTH SECTION SCROLL
-========================================================== */
-
-document.querySelectorAll('a[href^="#"]').forEach(link=>{
-
-link.addEventListener("click",e=>{
-
-e.preventDefault();
-
-const target=document.querySelector(
-
-link.getAttribute("href")
-
-);
-
-if(!target)return;
-
-window.scrollTo({
-
-top:target.offsetTop-90,
-
-behavior:"smooth"
-
-});
-
-});
-
-});
-
-/* ==========================================================
-   ACTIVE HERO BUTTON
-========================================================== */
-
-document.querySelectorAll(
-
-".primary-btn,.secondary-btn"
-
-).forEach(btn=>{
-
-btn.addEventListener("mouseenter",()=>{
-
-btn.animate([
-
-{
-
-transform:"translateY(0)"
-
-},
-
-{
-
-transform:"translateY(-8px) scale(1.05)"
-
-},
-
-{
-
-transform:"translateY(-5px)"
-
-}
-
-],{
-
-duration:300,
-
-fill:"forwards"
-
-});
-
-});
-
-btn.addEventListener("mouseleave",()=>{
-
-btn.style.transform="";
-
-});
-
-});
-
-/* ==========================================================
-   CARD TILT
-========================================================== */
-
-document.querySelectorAll(
-
-".match-card,.fixture-card,.player-card,.stadium-card,.news-card"
-
-).forEach(card=>{
-
-card.addEventListener("mousemove",e=>{
-
-const rect=card.getBoundingClientRect();
-
-const x=e.clientX-rect.left;
-
-const y=e.clientY-rect.top;
-
-const rx=((y/rect.height)-.5)*-12;
-
-const ry=((x/rect.width)-.5)*12;
-
-card.style.transform=
-
-`perspective(1000px)
-
-rotateX(${rx}deg)
-
-rotateY(${ry}deg)
-
-translateY(-8px)`;
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.style.transform="";
-
-});
-
-});
-
-/* ==========================================================
-   RANDOM MATCH SHUFFLE
-========================================================== */
-
-function shuffleMatches(){
-
-state.matches.sort(()=>Math.random()-.5);
-
-renderMatches(state.matches);
-
-}
-
-setInterval(shuffleMatches,120000);
-
-/* ==========================================================
-   LIVE COUNTER
-========================================================== */
-
-let liveMatches=
-
-document.querySelectorAll(".match-card").length;
-
-setInterval(()=>{
-
-matchCounter.textContent=liveMatches;
-
-},3000);
-
-/* ==========================================================
-   MATCH HIGHLIGHT
-========================================================== */
-
-setInterval(()=>{
-
-const cards=document.querySelectorAll(".match-card");
-
-cards.forEach(card=>{
-
-card.classList.remove("featured");
-
-});
-
-if(cards.length){
-
-cards[
-
-Math.floor(Math.random()*cards.length)
-
-].classList.add("featured");
-
-}
-
-},6000);
-
-/* ==========================================================
-   NEWS HOVER
-========================================================== */
-
-document.querySelectorAll(".news-card")
-
-.forEach(card=>{
-
-card.addEventListener("mouseenter",()=>{
-
-card.style.borderColor="#00d8ff";
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.style.borderColor="";
-
-});
-
-});
-
-/* ==========================================================
-   SCROLL DEPTH
-========================================================== */
-
-let highest=0;
-
-window.addEventListener("scroll",()=>{
-
-const depth=Math.round(
-
-(window.scrollY/
-
-(document.body.scrollHeight-
-
-window.innerHeight))*100
-
-);
-
-if(depth>highest){
-
-highest=depth;
-
-console.log(
-
-"Scroll Progress:",highest+"%"
-
-);
-
-}
-
-});
-
-/* ==========================================================
-   KEYBOARD NAVIGATION
-========================================================== */
-
-document.addEventListener("keydown",e=>{
-
-if(e.key==="ArrowDown"){
-
-window.scrollBy({
-
-top:window.innerHeight,
-
-behavior:"smooth"
-
-});
-
-}
-
-if(e.key==="ArrowUp"){
-
-window.scrollBy({
-
-top:-window.innerHeight,
-
-behavior:"smooth"
-
-});
-
-}
-
-});
-
-/* ==========================================================
-   PERFORMANCE FPS
-========================================================== */
-
-let frames=0;
-
-let last=performance.now();
-
-function fpsCounter(now){
-
-frames++;
-
-if(now-last>=1000){
-
-console.log("FPS:",frames);
-
-frames=0;
-
-last=now;
-
-}
-
-requestAnimationFrame(fpsCounter);
-
-}
-
-requestAnimationFrame(fpsCounter);
-
-/* ==========================================================
-   RANDOM GLOW
-========================================================== */
-
-setInterval(()=>{
-
-document.querySelectorAll(".hero-light")
-
-.forEach(light=>{
-
-light.style.opacity=
-
-(.25+Math.random()*.35);
-
-});
-
-},4000);
-
-/* ==========================================================
-   PRELOAD IMAGES
-========================================================== */
-
-document.querySelectorAll("img")
-
-.forEach(img=>{
-
-const preload=new Image();
-
-preload.src=img.src;
-
-});
-
-/* ==========================================================
-   APP READY
-========================================================== */
-
-console.log(
-
-"%cWorld Pulse Engine Loaded Successfully",
-
-"color:#00d8ff;font-size:18px;font-weight:bold;"
-
-);
-
-/* ==========================================================
-   END OF PART 7
-========================================================== */
-/* ==========================================================
-   APP.JS
-   PART 8
-   ADVANCED EXPERIENCE ENGINE
-========================================================== */
-
-/* ==========================================================
-   WEATHER SIMULATION
-========================================================== */
-
-const weatherTypes=[
-
-"☀️ Clear",
-
-"🌤 Partly Cloudy",
-
-"☁️ Cloudy",
-
-"🌧 Light Rain"
-
-];
-
-function updateWeather(){
-
-document.querySelectorAll(".stadium-card")
-
-.forEach(card=>{
-
-let weather=card.querySelector(".weather");
-
-if(!weather){
-
-weather=document.createElement("div");
-
-weather.className="weather";
-
-card.querySelector(".stadium-content")
-
-.appendChild(weather);
-
-}
-
-weather.textContent=
-
-weatherTypes[
-
-Math.floor(
-
-Math.random()*weatherTypes.length
-
-)
-
-];
-
-});
-
-}
-
-updateWeather();
-
-setInterval(updateWeather,30000);
-
-/* ==========================================================
-   LIVE CLOCK GLOW
-========================================================== */
-
-setInterval(()=>{
-
-liveClock.animate([
-
-{
-
-opacity:1,
-
-transform:"scale(1)"
-
-},
-
-{
-
-opacity:.65,
-
-transform:"scale(1.15)"
-
-},
-
-{
-
-opacity:1,
-
-transform:"scale(1)"
-
-}
-
-],{
-
-duration:1000
-
-});
-
-},1000);
-
-/* ==========================================================
-   RANDOM SCORE FLASH
-========================================================== */
-
-function flashRandomCard(){
-
-const cards=document.querySelectorAll(".match-card");
-
-if(!cards.length)return;
-
-const card=
-
-cards[Math.floor(Math.random()*cards.length)];
-
-card.animate([
-
-{
-
-boxShadow:"0 0 0 transparent"
-
-},
-
-{
-
-boxShadow:"0 0 50px rgba(0,216,255,.55)"
-
-},
-
-{
-
-boxShadow:"0 0 0 transparent"
-
-}
-
-],{
-
-duration:1400
-
-});
-
-}
-
-setInterval(flashRandomCard,8000);
-
-/* ==========================================================
-   HERO PARTICLES
-========================================================== */
-
-const heroParticles=document.createElement("div");
-
-heroParticles.className="hero-particles";
-
-document.querySelector(".hero")
-
-.appendChild(heroParticles);
-
-for(let i=0;i<28;i++){
-
-const p=document.createElement("span");
-
-p.className="hero-particle";
-
-p.style.left=Math.random()*100+"%";
-
-p.style.animationDelay=
-
-Math.random()*8+"s";
-
-p.style.animationDuration=
-
-8+Math.random()*8+"s";
-
-heroParticles.appendChild(p);
-
-}
-
-/* ==========================================================
-   STADIUM CARD SHINE
-========================================================== */
-
-document.querySelectorAll(".stadium-card")
-
-.forEach(card=>{
-
-card.addEventListener("mousemove",e=>{
-
-const rect=card.getBoundingClientRect();
-
-const x=e.clientX-rect.left;
-
-const y=e.clientY-rect.top;
-
-card.style.setProperty("--x",x+"px");
-
-card.style.setProperty("--y",y+"px");
-
-});
-
-});
-
-/* ==========================================================
-   COPY TEAM NAME
-========================================================== */
-
-document.querySelectorAll(".card-team h3")
-
-.forEach(team=>{
-
-team.style.cursor="pointer";
-
-team.title="Click to copy";
-
-team.addEventListener("click",()=>{
-
-navigator.clipboard.writeText(
-
-team.textContent
-
-);
-
-showToast(
-
-team.textContent+
-
-" copied"
-
-);
-
-});
-
-});
-
-/* ==========================================================
-   LIVE VIEWERS
-========================================================== */
-
-const viewers=document.createElement("div");
-
-viewers.className="live-viewers";
-
-viewers.innerHTML=`
-
-👥
-
-<span>
-
-128,542
-
-</span>
-
-Watching Live
-
-`;
-
-document.body.appendChild(viewers);
-
-setInterval(()=>{
-
-const number=
-
-120000+
-
-Math.floor(Math.random()*15000);
-
-viewers.querySelector("span")
-
-.textContent=
-
-number.toLocaleString();
-
-},2500);
-
-/* ==========================================================
-   HERO BACKGROUND SHIFT
-========================================================== */
-
-let hue=0;
-
-setInterval(()=>{
-
-hue++;
-
-document.documentElement.style.setProperty(
-
-"--heroHue",
-
-hue+"deg"
-
-);
-
-},120);
-
-/* ==========================================================
-   CARD STAGGER
-========================================================== */
-
-function staggerCards(){
-
-document.querySelectorAll(
-
-".match-card,.fixture-card,.player-card,.stadium-card,.news-card"
-
-).forEach((card,index)=>{
-
-card.style.opacity="0";
-
-card.style.transform="translateY(50px)";
-
-setTimeout(()=>{
-
-card.style.transition=".8s";
-
-card.style.opacity="1";
-
-card.style.transform="none";
-
-},index*80);
-
-});
-
-}
-
-window.addEventListener("load",staggerCards);
-
-/* ==========================================================
-   QUICK SEARCH
-========================================================== */
-
-document.addEventListener("keydown",e=>{
-
-if(e.ctrlKey&&e.key==="k"){
-
-e.preventDefault();
-
-searchInput.focus();
-
-searchInput.select();
-
-showToast("Quick Search");
-
-}
-
-});
-
-/* ==========================================================
-   MEMORY
-========================================================== */
-
-window.addEventListener("beforeunload",()=>{
-
-localStorage.setItem(
-
-"scrollPosition",
-
-window.scrollY
-
-);
-
-});
-
-window.addEventListener("load",()=>{
-
-const pos=
-
-localStorage.getItem(
-
-"scrollPosition"
-
-);
-
-if(pos){
-
-window.scrollTo({
-
-top:Number(pos)
-
-});
-
-}
-
-});
-
-/* ==========================================================
-   RANDOM MOTIVATION
-========================================================== */
-
-const quotes=[
-
-"Football is more than a game.",
-
-"Dream. Believe. Achieve.",
-
-"Every Goal Creates History.",
-
-"Champions Never Stop.",
-
-"The World Watches."
-
-];
-
-setInterval(()=>{
-
-console.log(
-
-quotes[
-
-Math.floor(Math.random()*quotes.length)
-
-]
-
-);
-
-},15000);
-
-/* ==========================================================
-   END OF PART 8
-========================================================== */
-
-/* ==========================================================
-   APP.JS
-   PART 9
-   PRO FEATURES ENGINE
-========================================================== */
-
-/* ==========================================================
-   ADVANCED SEARCH
-========================================================== */
-
-const searchIndex=[];
-
-function buildSearchIndex(){
-
-searchIndex.length=0;
-
-state.matches.forEach(match=>{
-
-searchIndex.push({
-
-type:"Match",
-
-title:match.home+" vs "+match.away,
-
-search:
-
-(match.home+
-
-" "+
-
-match.away+
-
-" "+
-
-match.stadium).toLowerCase(),
-
-data:match
-
-});
-
-});
-
-state.fixtures.forEach(match=>{
-
-searchIndex.push({
-
-type:"Fixture",
-
-title:match.home+" vs "+match.away,
-
-search:
-
-(match.home+
-
-" "+
-
-match.away+
-
-" "+
-
-match.stadium).toLowerCase(),
-
-data:match
-
-});
-
-});
-
-}
-
-buildSearchIndex();
-
-const resultBox=document.createElement("div");
-
-resultBox.className="search-results";
-
-searchInput.parentElement.appendChild(resultBox);
-
-searchInput.addEventListener("input",e=>{
-
-const value=e.target.value.toLowerCase().trim();
-
-resultBox.innerHTML="";
-
-if(value===""){
-
-resultBox.style.display="none";
-
-renderMatches(state.matches);
-
-return;
-
-}
-
-const results=
-
-searchIndex.filter(item=>
-
-item.search.includes(value)
-
-);
-
-results.slice(0,6).forEach(item=>{
-
-const div=document.createElement("div");
-
-div.className="search-item";
-
-div.innerHTML=`
-
-<strong>
-
-${item.type}
-
-</strong>
-
-<span>
-
-${item.title}
-
-</span>
-
-`;
-
-div.onclick=()=>{
-
-searchInput.value=item.title;
-
-resultBox.style.display="none";
-
-showToast(item.title);
-
-};
-
-resultBox.appendChild(div);
-
-});
-
-resultBox.style.display=
-
-results.length?"block":"none";
-
-});
-
-/* ==========================================================
-   SHARE MATCH
-========================================================== */
-
-document.addEventListener("contextmenu",e=>{
-
-const card=e.target.closest(".match-card");
-
-if(!card)return;
-
-e.preventDefault();
-
-const teams=
-
-card.querySelectorAll(".card-team h3");
-
-const score=
-
-card.querySelector(".card-score").innerText;
-
-const text=
-
-`${teams[0].innerText} ${score} ${teams[1].innerText}`;
-
-if(navigator.share){
-
-navigator.share({
-
-title:"World Pulse",
-
-text:text
-
-});
-
-}else{
-
-navigator.clipboard.writeText(text);
-
-showToast("Match copied");
-
-}
-
-});
-
-/* ==========================================================
-   SAVE SETTINGS
-========================================================== */
-
-const settings={
-
-theme:state.theme,
-
-favorite:getFavorite(),
-
-animations:true
-
-};
-
-function saveSettings(){
-
-localStorage.setItem(
-
-"worldPulse",
-
-JSON.stringify(settings)
-
-);
-
-}
-
-function loadSettings(){
-
-const data=
-
-JSON.parse(
-
-localStorage.getItem("worldPulse")
-
-);
-
-if(!data)return;
-
-settings.theme=data.theme;
-
-settings.favorite=data.favorite;
-
-settings.animations=data.animations;
-
-}
-
-loadSettings();
-
-/* ==========================================================
-   FPS OPTIMIZATION
-========================================================== */
-
-let ticking=false;
-
-window.addEventListener("scroll",()=>{
-
-if(!ticking){
-
-window.requestAnimationFrame(()=>{
-
-handleScroll();
-
-ticking=false;
-
-});
-
-ticking=true;
-
-}
-
-});
-
-/* ==========================================================
-   NETWORK SPEED
-========================================================== */
-
-if(navigator.connection){
-
-const speed=
-
-navigator.connection.effectiveType;
-
-console.log(
-
-"Connection:",speed
-
-);
-
-}
-
-/* ==========================================================
-   MATCH TIMER
-========================================================== */
-
-setInterval(()=>{
-
-document
-
-.querySelectorAll(".match-time")
-
-.forEach(time=>{
-
-let value=parseInt(time.innerText);
-
-if(!isNaN(value)&&value<90){
-
-time.innerText=(value+1)+"'";
-
-}
-
-});
-
-},60000);
-
-/* ==========================================================
-   KEYBOARD COMMANDS
-========================================================== */
-
-document.addEventListener("keydown",e=>{
-
-switch(e.key.toLowerCase()){
-
-case "l":
-
-launchConfetti();
-
-break;
-
-case "m":
-
-shuffleMatches();
-
-break;
-
-case "f":
-
-searchInput.focus();
-
-break;
-
-case "g":
-
-window.location.hash="#groups";
-
-break;
-
-case "h":
-
-window.location.hash="#hero";
-
-break;
-
-}
-
-});
-
-/* ==========================================================
-   RANDOM BACKGROUND COLORS
-========================================================== */
-
-const heroLights=
-
-document.querySelectorAll(".hero-light");
-
-setInterval(()=>{
-
-heroLights.forEach(light=>{
-
-light.style.filter=
-
-`blur(130px)
-
-hue-rotate(${Math.random()*360}deg)`;
-
-});
-
-},10000);
-
-/* ==========================================================
-   PERFORMANCE MONITOR
-========================================================== */
-
-setInterval(()=>{
-
-const used=
-
-performance.memory?
-
-Math.round(
-
-performance.memory.usedJSHeapSize/
-
-1048576
-
-)+" MB"
-
-:"N/A";
-
-console.log(
-
-"Memory:",used
-
-);
-
-},30000);
-
-/* ==========================================================
-   AUTO SAVE
-========================================================== */
-
-setInterval(()=>{
-
-saveSettings();
-
-},10000);
-
-/* ==========================================================
-   END OF PART 9
-========================================================== */
-
-/* ==========================================================
-   APP.JS
-   PART 10 (FINAL)
-   WORLD PULSE ENGINE v1.0
-========================================================== */
-
-/* ==========================================================
-   ACCESSIBILITY
-========================================================== */
-
-document.addEventListener("keydown",(e)=>{
-
-if(e.key==="Tab"){
-
-document.body.classList.add("keyboard-user");
-
-}
-
-});
-
-document.addEventListener("mousedown",()=>{
-
-document.body.classList.remove("keyboard-user");
-
-});
-
-/* ==========================================================
-   LAZY REVEAL
-========================================================== */
-
-const revealObserver=new IntersectionObserver(entries=>{
-
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.classList.add("visible");
-
-revealObserver.unobserve(entry.target);
-
-}
-
-});
-
-},{
-
-threshold:.18
-
-});
-
-document.querySelectorAll(
-
-".fade-up,.match-card,.fixture-card,.player-card,.news-card,.stadium-card,.city-item"
-
-).forEach(el=>{
-
-revealObserver.observe(el);
-
-});
-
-/* ==========================================================
-   LIVE DATE
-========================================================== */
-
-function updateDate(){
-
-const date=document.querySelector("#todayDate");
-
-if(!date)return;
-
-date.textContent=
-
-new Date().toLocaleDateString(
-
-undefined,
-
-{
-
-weekday:"long",
-
-day:"numeric",
-
-month:"long",
-
-year:"numeric"
-
-}
-
-);
-
-}
-
-updateDate();
-
-/* ==========================================================
-   FULLSCREEN
-========================================================== */
-
-document.addEventListener("keydown",(e)=>{
-
-if(e.key==="F11")return;
-
-if(e.key.toLowerCase()==="x"){
-
-if(!document.fullscreenElement){
-
-document.documentElement.requestFullscreen();
-
-}else{
-
-document.exitFullscreen();
-
-}
-
-}
-
-});
-
-/* ==========================================================
-   CARD SOUND
-========================================================== */
-
-const hoverAudio=new Audio();
-
-hoverAudio.src="assets/audio/hover.mp3";
-
-hoverAudio.volume=.15;
-
-document.querySelectorAll(
-
-".match-card,.player-card,.stadium-card"
-
-).forEach(card=>{
-
-card.addEventListener("mouseenter",()=>{
-
-hoverAudio.currentTime=0;
-
-hoverAudio.play().catch(()=>{});
-
-});
-
-});
-
-/* ==========================================================
-   RANDOM MATCH OF THE DAY
-========================================================== */
-
-function matchOfTheDay(){
-
-const cards=document.querySelectorAll(".match-card");
-
-if(!cards.length)return;
-
-cards.forEach(card=>{
-
-card.classList.remove("match-of-day");
-
-});
-
-cards[
-
-Math.floor(Math.random()*cards.length)
-
-].classList.add("match-of-day");
-
-}
-
-matchOfTheDay();
-
-/* ==========================================================
-   ESTIMATED READING TIME
-========================================================== */
-
-document.querySelectorAll(".news-card")
-
-.forEach(card=>{
-
-const words=
-
-card.innerText.split(/\s+/).length;
-
-const minutes=
-
-Math.max(1,
-
-Math.ceil(words/200)
-
-);
-
-const time=document.createElement("small");
-
-time.className="reading-time";
-
-time.textContent=
-
-`${minutes} min read`;
-
-card.appendChild(time);
-
-});
-
-/* ==========================================================
-   CONNECTION STATUS
-========================================================== */
-
-const status=document.createElement("div");
-
-status.className="connection-status";
-
-document.body.appendChild(status);
-
-function networkStatus(){
-
-if(navigator.onLine){
-
-status.textContent="🟢 Online";
-
-status.className="connection-status online";
-
-}else{
-
-status.textContent="🔴 Offline";
-
-status.className="connection-status offline";
-
-}
-
-}
-
-window.addEventListener("online",networkStatus);
-
-window.addEventListener("offline",networkStatus);
-
-networkStatus();
-
-/* ==========================================================
-   LOCAL STORAGE CLEANUP
-========================================================== */
-
-function cleanStorage(){
-
-const keys=[
-
-"theme",
-
-"favoriteTeam",
-
-"scrollPosition",
-
-"worldPulse"
-
-];
-
-keys.forEach(key=>{
-
-if(localStorage.getItem(key)==="undefined"){
-
-localStorage.removeItem(key);
-
-}
-
-});
-
-}
-
-cleanStorage();
-
-/* ==========================================================
-   PERFORMANCE REPORT
-========================================================== */
-
-window.addEventListener("load",()=>{
-
-setTimeout(()=>{
-
-const report={
-
-matches:state.matches.length,
-
-fixtures:state.fixtures.length,
-
-theme:state.theme,
-
-online:navigator.onLine,
-
-language:navigator.language,
-
-platform:navigator.platform,
-
-resolution:
-
-window.innerWidth+
-
-"x"+
-
-window.innerHeight
-
-};
-
-console.table(report);
-
-},1200);
-
-});
-
-/* ==========================================================
-   DEVELOPER MODE
-========================================================== */
-
-window.WorldPulse={
-
-version:"1.0",
-
-state,
-
-renderMatches,
-
-renderFixtures,
-
-shuffleMatches,
-
-launchConfetti,
-
-showToast
-
-};
-
-/* ==========================================================
-   EASTER EGG
-========================================================== */
-
-let code="";
-
-document.addEventListener("keydown",e=>{
-
-code+=e.key.toLowerCase();
-
-code=code.slice(-10);
-
-if(code==="worldpulse"){
-
-launchConfetti();
-
-document.body.animate([
-
-{
-
-filter:"hue-rotate(0deg)"
-
-},
-
-{
-
-filter:"hue-rotate(360deg)"
-
-}
-
-],{
-
-duration:2500
-
-});
-
-showToast("🏆 Welcome to World Pulse Developer Mode!");
-
-}
-
-});
-
-/* ==========================================================
-   FINAL STARTUP
-========================================================== */
-
-(function(){
-
-console.clear();
-
-console.log(
-
-"%cWORLD PULSE",
-
-"color:#00d8ff;font-size:42px;font-weight:900;"
-
-);
-
-console.log(
-
-"%cPremium FIFA World Cup Dashboard",
-
-"color:white;font-size:18px;"
-
-);
-
-console.log(
-
-"%cVersion 1.0 Ready",
-
-"color:#2cff72;font-size:16px;font-weight:bold;"
-
-);
-
-networkStatus();
-
-matchOfTheDay();
-
-updateTicker();
-
-updateWeather();
-
-})();
-
-/* ==========================================================
-   END OF FILE
-========================================================== */
-
-
-
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+  const pMat = new THREE.PointsMaterial({ color: 0x00d97e, size: 0.025, transparent: true, opacity: 0.6 });
+  const points = new THREE.Points(pGeo, pMat);
+  scene.add(points);
+
+  // Position group to right side of screen
+  group.position.set(2.5, 0, 0);
+
+  // Mouse interaction
+  let mx = 0, my = 0;
+  window.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  // Resize
+  window.addEventListener('resize', () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  });
+
+  // Animate
+  const clock = new THREE.Clock();
+  let targetRotX = 0, targetRotY = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    // Auto rotation + mouse influence
+    targetRotX += (-my * 0.3 - targetRotX) * 0.05;
+    targetRotY += (mx * 0.3 - targetRotY) * 0.05;
+
+    ball.rotation.x = t * 0.3 + targetRotX;
+    ball.rotation.y = t * 0.5 + targetRotY;
+
+    ring.rotation.z = t * 0.4;
+    ring2.rotation.z = -t * 0.25;
+    ring2.rotation.x = Math.PI / 4 + Math.sin(t * 0.5) * 0.1;
+
+    points.rotation.y = t * 0.08;
+    points.rotation.x = t * 0.04;
+
+    // Subtle float
+    group.position.y = Math.sin(t * 0.7) * 0.12;
+
+    // Pulse glow
+    ringMat.opacity = 0.18 + Math.sin(t * 1.5) * 0.08;
+    key.intensity = 2.5 + Math.sin(t * 0.9) * 0.5;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+// ── LOADER CANVAS ────────────────────────
+function initLoaderCanvas() {
+  const c = document.getElementById('loaderCanvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  let angle = 0;
+  function draw() {
+    ctx.clearRect(0,0,120,120);
+    ctx.strokeStyle = '#1a2236';
+    ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(60,60,46,0,Math.PI*2); ctx.stroke();
+    const grad = ctx.createLinearGradient(0,0,120,120);
+    grad.addColorStop(0,'#00d97e'); grad.addColorStop(1,'#4299ff');
+    ctx.strokeStyle = grad;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(60,60,46,angle,angle+Math.PI*1.4); ctx.stroke();
+    angle += 0.05;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── CUSTOM CURSOR ────────────────────────
+function initCursor() {
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  if (!cursor || !trail) return;
+  let cx=0,cy=0,tx=0,ty=0;
+  document.addEventListener('mousemove', e => {
+    tx = e.clientX; ty = e.clientY;
+    cursor.style.left = tx+'px'; cursor.style.top = ty+'px';
+  });
+  function lerpTrail() {
+    cx += (tx-cx) * 0.12; cy += (ty-cy) * 0.12;
+    trail.style.left = cx+'px'; trail.style.top = cy+'px';
+    requestAnimationFrame(lerpTrail);
+  }
+  lerpTrail();
+  document.addEventListener('mousedown', () => document.body.classList.add('clicking'));
+  document.addEventListener('mouseup', () => document.body.classList.remove('clicking'));
+  document.querySelectorAll('a,button,.mcard,.b-match,.stadium-card,.gtab').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('hovered'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('hovered'));
+  });
+}
+
+// ── CARD MOUSE GLOW ──────────────────────
+function initCardGlow() {
+  document.addEventListener('mousemove', e => {
+    document.querySelectorAll('.mcard').forEach(card => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+}
+
+// ── NAV SCROLL ───────────────────────────
+function initNav() {
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+}
+
+// ── COUNT UP ─────────────────────────────
+function countUp(el) {
+  if (el.dataset.counted) return;
+  el.dataset.counted = '1';
+  const target = parseInt(el.dataset.count);
+  const dur = 1400;
+  const start = performance.now();
+  const ease = t => t === 1 ? 1 : 1 - Math.pow(2, -10*t);
+  const tick = now => {
+    const t = Math.min((now-start)/dur, 1);
+    el.textContent = Math.floor(ease(t) * target);
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(tick);
+}
+
+// ── INTERSECTION REVEAL ──────────────────
+function initReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const delay = parseInt(el.dataset.delay || 0);
+      setTimeout(() => el.classList.add('anim-in'), delay);
+      obs.unobserve(el);
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+
+  const cardObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const parent = e.target;
+      parent.querySelectorAll('.mcard,.b-match,.frow,.stadium-card').forEach((el,i) => {
+        setTimeout(() => el.classList.add('in'), i * 50);
+      });
+      cardObs.unobserve(parent);
+    });
+  }, { threshold: 0.1 });
+
+  ['scoresGrid','bracketGrid','fixturesList','stadiumsGrid'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) cardObs.observe(el);
+  });
+
+  // Count-ups
+  const countObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.querySelectorAll('[data-count]').forEach(countUp);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.hero-stats,.hero-numbers').forEach(el => countObs.observe(el));
+}
+
+// ── TICKER ───────────────────────────────
+function buildTicker(matches) {
+  const t = document.getElementById('ticker');
+  if (!t) return;
+  const items = matches.map(m =>
+    `<span class="ticker-item">${F(m.home)||m.home} ${m.home} <span class="ticker-score">${m.sH} – ${m.sA}</span> ${m.away} ${F(m.away)||m.away}</span>`
+  ).join('');
+  t.innerHTML = items + items;
+}
+
+// ── LIVE SCORES ──────────────────────────
+async function fetchScores() {
+  const today = new Date();
+  const days = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  try {
+    const results = await Promise.all(days.map(async date => {
+      const r = await fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${date}&s=Soccer`);
+      const data = await r.json();
+      return (data.events || []).filter(e => (e.strLeague||'').toLowerCase().includes('world cup'));
+    }));
+    const events = results.flat();
+    if (!events.length) throw new Error('no wc events');
+    return events
+      .filter(e => e.intHomeScore !== null && e.intHomeScore !== undefined)
+      .map(e => ({
+        home: e.strHomeTeam, away: e.strAwayTeam,
+        sH: e.intHomeScore, sA: e.intAwayScore,
+        date: new Date(e.dateEvent).toLocaleDateString('en-GB',{day:'numeric',month:'short'}),
+        status: ['Match Finished','FT'].includes(e.strStatus) ? 'Full Time' : (e.strStatus || 'Full Time'),
+        live: e.strStatus && !['Match Finished','FT','NS',''].includes(e.strStatus),
+      }))
+      .slice(0,10);
+  } catch {
+    return null;
+  }
+}
+
+function renderScores(matches, isLive) {
+  const grid = document.getElementById('scoresGrid');
+  const meta = document.getElementById('scoreMeta');
+  const pip = document.getElementById('apiPip');
+  const label = document.getElementById('apiLabel');
+  if (!grid) return;
+
+  if (isLive) {
+    pip.classList.add('live');
+    label.textContent = 'Live data';
+    meta.textContent = `${matches.length} matches · refreshed on load`;
+  } else {
+    pip.classList.add('dead');
+    label.textContent = 'Cached data';
+    meta.textContent = 'API unavailable — showing recent results';
+  }
+
+  grid.innerHTML = '';
+  matches.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'mcard';
+    card.style.transitionDelay = i*45+'ms';
+    const liveClass = m.live ? 'is-live' : '';
+    card.innerHTML = `
+      <div class="mcard-status ${liveClass}">
+        <span class="mpip"></span>
+        ${m.date} · ${m.status}
+      </div>
+      <div class="mcard-teams">
+        <div class="mcard-team">
+          <span class="mcard-flag">${F(m.home)}</span>
+          <span class="mcard-name">${isLive ? A(m.home) : m.home}</span>
+        </div>
+        <div class="mcard-score">
+          <span class="mcard-score-num">${m.sH}</span>
+          <span class="mcard-score-sep">–</span>
+          <span class="mcard-score-num">${m.sA}</span>
+        </div>
+        <div class="mcard-team">
+          <span class="mcard-flag">${F(m.away)}</span>
+          <span class="mcard-name">${isLive ? A(m.away) : m.away}</span>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+  buildTicker(matches);
+}
+
+// ── BRACKET ──────────────────────────────
+function renderBracket() {
+  const grid = document.getElementById('bracketGrid');
+  if (!grid) return;
+  BRACKET.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'b-match';
+    const played = m.hScore !== null;
+    const hWin = played && m.hScore > m.aScore;
+    const aWin = played && m.aScore > m.hScore;
+    el.innerHTML = `
+      <div class="b-match-date">${m.date}</div>
+      <div class="b-team">
+        <div class="b-team-info">
+          <span class="b-flag">${F(m.home)}</span>
+          <span class="b-name">${m.home}</span>
+        </div>
+        <span class="b-score ${played&&!hWin?'loser':''}">${played?m.hScore:'–'}</span>
+      </div>
+      <div class="b-team">
+        <div class="b-team-info">
+          <span class="b-flag">${F(m.away)}</span>
+          <span class="b-name">${m.away}</span>
+        </div>
+        <span class="b-score ${played&&!aWin?'loser':''}">${played?m.aScore:'–'}</span>
+      </div>`;
+    grid.appendChild(el);
+  });
+}
+
+// ── GROUPS ───────────────────────────────
+let activeGroup = 'A';
+function renderGroupTabs() {
+  const tabs = document.getElementById('groupTabs');
+  if (!tabs) return;
+  Object.keys(GROUPS).forEach(letter => {
+    const btn = document.createElement('button');
+    btn.className = 'gtab' + (letter===activeGroup?' active':'');
+    btn.textContent = letter;
+    btn.addEventListener('click', () => {
+      activeGroup = letter;
+      tabs.querySelectorAll('.gtab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      renderGroupPanel();
+    });
+    tabs.appendChild(btn);
+  });
+}
+function renderGroupPanel() {
+  const panel = document.getElementById('groupPanel');
+  if (!panel) return;
+  const rows = GROUPS[activeGroup].map((t,i) => `
+    <tr class="${i<2?'qual':''}">
+      <td><div class="gt-team"><span class="gt-flag">${F(t.t)}</span><span class="gt-name">${t.t}</span></div></td>
+      <td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
+      <td class="gt-pts">${t.pts}</td>
+    </tr>`).join('');
+  panel.innerHTML = `
+    <table class="gtable">
+      <thead><tr><th>Team</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ── FIXTURES ─────────────────────────────
+function renderFixtures() {
+  const list = document.getElementById('fixturesList');
+  if (!list) return;
+  FIXTURES.forEach((f,i) => {
+    const row = document.createElement('div');
+    row.className = 'frow';
+    row.style.transitionDelay = i*45+'ms';
+    row.innerHTML = `
+      <div class="fteam">
+        <span class="fflag">${F(f.home)}</span>
+        <span class="fname">${f.home}</span>
+      </div>
+      <div class="fcenter">
+        <span class="fvs">vs</span>
+        <span class="ftime">${f.time}</span>
+        <div class="fprob">
+          <span class="ph">${f.ph}%</span>
+          <span>·</span>
+          <span class="pa">${f.pa}%</span>
+        </div>
+      </div>
+      <div class="fteam fteam-away">
+        <span class="fflag">${F(f.away)}</span>
+        <span class="fname">${f.away}</span>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+// ── STADIUMS ─────────────────────────────
+function renderStadiums() {
+  const grid = document.getElementById('stadiumsGrid');
+  if (!grid) return;
+  STADIUMS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'stadium-card';
+    card.innerHTML = `
+      <div class="stadium-img">${s.icon}</div>
+      <div class="stadium-body">
+        <div class="stadium-name">${s.name}</div>
+        <div class="stadium-city">${s.city} · ${s.role}</div>
+        <div class="stadium-stats">
+          <div class="sstat"><strong>${s.cap}</strong><span>Capacity</span></div>
+          <div class="sstat"><strong>${s.matches}</strong><span>Matches</span></div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── BOOT ─────────────────────────────────
+async function boot() {
+  initLoaderCanvas();
+  initThree();
+  initCursor();
+  initCardGlow();
+  initNav();
+
+  // Set data-count from data-count attr on hstat nums
+  document.querySelectorAll('[data-count]').forEach(el => {
+    el.textContent = '0';
+  });
+
+  renderBracket();
+  renderGroupTabs();
+  renderGroupPanel();
+  renderFixtures();
+  renderStadiums();
+
+  // Attempt live fetch
+  const live = await fetchScores();
+  if (live && live.length) {
+    renderScores(live, true);
+  } else {
+    // Build fallback with full names from abbrs
+    const mapped = FALLBACK_SCORES.map(m => {
+      const homeMap = {CPV:'Cape Verde',KSA:'Saudi Arabia',NZL:'New Zealand',BEL:'Belgium',EGY:'Egypt',IRN:'IR Iran',PAN:'Panama',ENG:'England',CRO:'Croatia',GHA:'Ghana',COL:'Colombia',POR:'Portugal',COD:'Congo DR',UZB:'Uzbekistan',JOR:'Jordan',ARG:'Argentina',DZA:'Algeria',AUT:'Austria',RSA:'South Africa',CAN:'Canada'};
+      return {...m, home:homeMap[m.home]||m.home, away:homeMap[m.away]||m.away};
+    });
+    renderScores(mapped, false);
+  }
+
+  initReveal();
+
+  // Hide loader
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+  }, 1200);
+}
+
+// Wait for Three.js to load
+window.addEventListener('load', boot);

@@ -12,19 +12,16 @@
 </head>
 <body>
 
-<!-- CURSOR -->
 <div class="cursor" id="cursor"></div>
 <div class="cursor-trail" id="cursorTrail"></div>
 
-<!-- LOADER -->
 <div class="loader" id="loader">
   <div class="loader-inner">
-    <canvas id="loaderCanvas" width="120" height="120"></canvas>
+    <canvas id="loaderCanvas" width="100" height="100"></canvas>
     <p class="loader-text">WORLD PULSE</p>
   </div>
 </div>
 
-<!-- NAV -->
 <header class="nav" id="nav">
   <div class="nav-inner">
     <a class="nav-logo" href="#">
@@ -45,73 +42,56 @@
   </div>
 </header>
 
-<!-- TICKER -->
-<div class="ticker-wrap">
-  <div class="ticker" id="ticker"></div>
-</div>
+<div class="ticker-wrap"><div class="ticker" id="ticker"></div></div>
 
-<!-- HERO -->
 <section class="hero" id="hero">
   <canvas id="threeCanvas"></canvas>
+  <div class="hero-overlay"></div>
   <div class="hero-content">
-    <p class="hero-tag" data-anim>FIFA WORLD CUP 2026</p>
+    <p class="hero-tag">FIFA World Cup 2026</p>
     <h1 class="hero-h1">
-      <span data-anim data-delay="100">ONE WORLD.</span>
-      <span data-anim data-delay="250" class="accent">ONE TROPHY.</span>
-      <span data-anim data-delay="400">ONE LEGACY.</span>
+      <span>ONE WORLD.</span>
+      <span class="accent">ONE TROPHY.</span>
+      <span>ONE LEGACY.</span>
     </h1>
-    <div class="hero-stats" data-anim data-delay="600">
+    <div class="hero-stats">
       <div class="hstat"><span class="hnum" data-count="48">0</span><span>Nations</span></div>
       <div class="hstat"><span class="hnum" data-count="104">0</span><span>Matches</span></div>
       <div class="hstat"><span class="hnum" data-count="16">0</span><span>Venues</span></div>
       <div class="hstat"><span class="hnum" data-count="3">0</span><span>Countries</span></div>
     </div>
-    <div class="hero-btns" data-anim data-delay="800">
+    <div class="hero-btns">
       <a href="#scores" class="btn-primary">Live Scores</a>
       <a href="#bracket" class="btn-ghost">View Bracket</a>
     </div>
+    <p class="drag-hint">⟳ Drag the ball to rotate</p>
   </div>
-  <div class="hero-scroll">
-    <span>Scroll</span>
-    <div class="scroll-line"></div>
-  </div>
+  <div class="hero-scroll"><span>Scroll</span><div class="scroll-line"></div></div>
 </section>
 
-<!-- LIVE SCORES -->
 <section class="section" id="scores">
   <div class="container">
     <div class="sec-head">
-      <div>
-        <p class="sec-tag">Match Center</p>
-        <h2 class="sec-title">Live &amp; Recent <em>Results</em></h2>
-      </div>
+      <div><p class="sec-tag">Match Center</p><h2 class="sec-title">Live &amp; Recent <em>Results</em></h2></div>
       <div class="sec-meta" id="scoreMeta"></div>
     </div>
     <div class="scores-grid" id="scoresGrid"></div>
   </div>
 </section>
 
-<!-- KNOCKOUT BRACKET -->
 <section class="section dark" id="bracket">
   <div class="container">
     <div class="sec-head">
-      <div>
-        <p class="sec-tag">Round of 32</p>
-        <h2 class="sec-title">Road to the <em>Final</em></h2>
-      </div>
+      <div><p class="sec-tag">Round of 32</p><h2 class="sec-title">Road to the <em>Final</em></h2></div>
     </div>
     <div class="bracket" id="bracketGrid"></div>
   </div>
 </section>
 
-<!-- GROUP STANDINGS -->
 <section class="section" id="groups">
   <div class="container">
     <div class="sec-head">
-      <div>
-        <p class="sec-tag">Group Stage · Complete</p>
-        <h2 class="sec-title">Group <em>Standings</em></h2>
-      </div>
+      <div><p class="sec-tag">Group Stage · Complete</p><h2 class="sec-title">Group <em>Standings</em></h2></div>
       <span class="manual-badge">Manually updated</span>
     </div>
     <div class="group-tabs" id="groupTabs"></div>
@@ -119,33 +99,24 @@
   </div>
 </section>
 
-<!-- FIXTURES -->
 <section class="section dark" id="fixtures">
   <div class="container">
     <div class="sec-head">
-      <div>
-        <p class="sec-tag">Coming Up</p>
-        <h2 class="sec-title">Upcoming <em>Fixtures</em></h2>
-      </div>
+      <div><p class="sec-tag">Coming Up</p><h2 class="sec-title">Upcoming <em>Fixtures</em></h2></div>
     </div>
     <div class="fixtures-list" id="fixturesList"></div>
   </div>
 </section>
 
-<!-- STADIUMS -->
 <section class="section" id="stadiums">
   <div class="container">
     <div class="sec-head">
-      <div>
-        <p class="sec-tag">Host Venues</p>
-        <h2 class="sec-title">Iconic <em>Stadiums</em></h2>
-      </div>
+      <div><p class="sec-tag">Host Venues</p><h2 class="sec-title">Iconic <em>Stadiums</em></h2></div>
     </div>
     <div class="stadiums-grid" id="stadiumsGrid"></div>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
   <div class="container">
     <div class="footer-logo">⚽ WORLD PULSE</div>
@@ -153,7 +124,7 @@
   </div>
 </footer>
 
-<!-- Three.js CDN -->
+<!-- Three.js loaded BEFORE app.js, no defer/async so it's sync -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="app.js"></script>
 </body>

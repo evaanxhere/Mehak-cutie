@@ -133,11 +133,7 @@ function initThree(){
   })();
 }
 
-function initLoader(){
-  const c=document.getElementById('loaderCanvas');if(!c)return;
-  const ctx=c.getContext('2d');let a=0;
-  (function draw(){ctx.clearRect(0,0,100,100);ctx.strokeStyle='#1a2236';ctx.lineWidth=5;ctx.beginPath();ctx.arc(50,50,38,0,Math.PI*2);ctx.stroke();const g=ctx.createLinearGradient(0,0,100,100);g.addColorStop(0,'#00d97e');g.addColorStop(1,'#4299ff');ctx.strokeStyle=g;ctx.lineCap='round';ctx.beginPath();ctx.arc(50,50,38,a,a+Math.PI*1.4);ctx.stroke();a+=0.06;requestAnimationFrame(draw);})();
-}
+
 
 function initCursor(){
   const dot=document.getElementById('cursor'),trail=document.getElementById('cursorTrail');
@@ -313,7 +309,7 @@ function renderStadiums(){
 
 // ── BOOT ──
 (async function boot(){
-  initLoader();initNav();initCardGlow();
+  initNav();initCardGlow();
   renderBracket();renderGroupTabs();renderGroupPanel();renderFixtures();renderStadiums();
   initThree();initCursor();initReveal();
   buildTicker();
@@ -322,5 +318,5 @@ function renderStadiums(){
   const live=await fetchScores();
   renderScores(live||RECENT_SCORES,!!live);
 
-  setTimeout(()=>document.getElementById('loader').classList.add('out'),1000);
+  
 })();

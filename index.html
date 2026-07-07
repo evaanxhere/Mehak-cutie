@@ -3,124 +3,110 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#05070d"/>
-<title>World Pulse | FIFA World Cup 2026</title>
+<title>World Pulse — FIFA World Cup 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-trail" id="cursorTrail"></div>
-
-</div>
-
+<!-- NAV -->
 <header class="nav" id="nav">
-  <div class="nav-inner">
-    <a class="nav-logo" href="#">
-      <span class="logo-ball">⚽</span>
-      <span>WORLD <strong>PULSE</strong></span>
-    </a>
-    <nav class="nav-links">
-      <a href="#scores">Scores</a>
-      <a href="#bracket">Bracket</a>
-      <a href="#groups">Groups</a>
-      <a href="#fixtures">Fixtures</a>
-      <a href="#stadiums">Stadiums</a>
-    </nav>
-    <div class="nav-live">
-      <span class="pip" id="apiPip"></span>
-      <span id="apiLabel">Connecting…</span>
-    </div>
+  <a class="nav-logo" href="#">⚽ WORLD PULSE</a>
+  <nav class="nav-links">
+    <a href="#scores">Scores</a>
+    <a href="#bracket">Bracket</a>
+    <a href="#groups">Groups</a>
+    <a href="#fixtures">Fixtures</a>
+  </nav>
+  <div class="nav-status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">—</span>
   </div>
 </header>
 
-<div class="ticker-wrap"><div class="ticker" id="ticker"></div></div>
-
+<!-- HERO — stadium scoreboard feel -->
 <section class="hero" id="hero">
-  <canvas id="threeCanvas"></canvas>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p class="hero-tag">FIFA World Cup 2026</p>
-    <h1 class="hero-h1">
-      <span>ONE WORLD.</span>
-      <span class="accent">ONE TROPHY.</span>
-      <span>ONE LEGACY.</span>
-    </h1>
-    <div class="hero-stats">
-      <div class="hstat"><span class="hnum" data-count="48">0</span><span>Nations</span></div>
-      <div class="hstat"><span class="hnum" data-count="104">0</span><span>Matches</span></div>
-      <div class="hstat"><span class="hnum" data-count="16">0</span><span>Venues</span></div>
-      <div class="hstat"><span class="hnum" data-count="3">0</span><span>Countries</span></div>
+  <canvas id="ballCanvas"></canvas>
+  <div class="hero-body">
+    <div class="hero-left">
+      <p class="hero-eyebrow">FIFA World Cup 2026</p>
+      <h1 class="hero-title">
+        <span class="ht-line">THE</span>
+        <span class="ht-line ht-big">WORLD</span>
+        <span class="ht-line ht-italic">PLAYS.</span>
+      </h1>
+      <div class="hero-meta">
+        <div class="hm-item"><span class="hm-num" data-count="48">0</span><span class="hm-label">Nations</span></div>
+        <div class="hm-item"><span class="hm-num" data-count="104">0</span><span class="hm-label">Matches</span></div>
+        <div class="hm-item"><span class="hm-num" data-count="16">0</span><span class="hm-label">Venues</span></div>
+      </div>
+      <div class="hero-actions">
+        <a href="#scores" class="btn-main">Live Scores</a>
+        <a href="#bracket" class="btn-line">R16 Bracket</a>
+      </div>
     </div>
-    <div class="hero-btns">
-      <a href="#scores" class="btn-primary">Live Scores</a>
-      <a href="#bracket" class="btn-ghost">View Bracket</a>
+    <div class="hero-right">
+      <!-- canvas ball renders here -->
+      <p class="drag-hint">drag to rotate</p>
     </div>
-    <p class="drag-hint">⟳ Drag the ball to rotate</p>
   </div>
-  <div class="hero-scroll"><span>Scroll</span><div class="scroll-line"></div></div>
+  <!-- Scoreboard strip at bottom of hero -->
+  <div class="scoreboard-strip" id="scoreboardStrip"></div>
 </section>
 
+<!-- LIVE SCORES -->
 <section class="section" id="scores">
-  <div class="container">
-    <div class="sec-head">
-      <div><p class="sec-tag">Match Center</p><h2 class="sec-title">Live &amp; Recent <em>Results</em></h2></div>
-      <div class="sec-meta" id="scoreMeta"></div>
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="eyebrow">Match Center</span>
+      <h2 class="sec-h">Live &amp; Recent Results</h2>
+      <p class="sec-sub" id="scoresSub"></p>
     </div>
-    <div class="scores-grid" id="scoresGrid"></div>
+    <div class="cards-grid" id="scoresGrid"></div>
   </div>
 </section>
 
-<section class="section dark" id="bracket">
-  <div class="container">
-    <div class="sec-head">
-      <div><p class="sec-tag">Round of 32</p><h2 class="sec-title">Road to the <em>Final</em></h2></div>
+<!-- R16 BRACKET -->
+<section class="section alt" id="bracket">
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="eyebrow">Round of 16</span>
+      <h2 class="sec-h">Bracket</h2>
     </div>
-    <div class="bracket" id="bracketGrid"></div>
+    <div class="bracket-grid" id="bracketGrid"></div>
   </div>
 </section>
 
+<!-- GROUPS -->
 <section class="section" id="groups">
-  <div class="container">
-    <div class="sec-head">
-      <div><p class="sec-tag">Group Stage · Complete</p><h2 class="sec-title">Group <em>Standings</em></h2></div>
-      <span class="manual-badge">Manually updated</span>
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="eyebrow">Group Stage — Complete</span>
+      <h2 class="sec-h">Standings</h2>
     </div>
-    <div class="group-tabs" id="groupTabs"></div>
-    <div class="group-panel" id="groupPanel"></div>
+    <div class="gtabs" id="groupTabs"></div>
+    <div id="groupPanel"></div>
   </div>
 </section>
 
-<section class="section dark" id="fixtures">
-  <div class="container">
-    <div class="sec-head">
-      <div><p class="sec-tag">Coming Up</p><h2 class="sec-title">Upcoming <em>Fixtures</em></h2></div>
+<!-- FIXTURES -->
+<section class="section alt" id="fixtures">
+  <div class="wrap">
+    <div class="sec-label">
+      <span class="eyebrow">Coming Up</span>
+      <h2 class="sec-h">Upcoming Fixtures</h2>
     </div>
-    <div class="fixtures-list" id="fixturesList"></div>
-  </div>
-</section>
-
-<section class="section" id="stadiums">
-  <div class="container">
-    <div class="sec-head">
-      <div><p class="sec-tag">Host Venues</p><h2 class="sec-title">Iconic <em>Stadiums</em></h2></div>
-    </div>
-    <div class="stadiums-grid" id="stadiumsGrid"></div>
+    <div id="fixturesList"></div>
   </div>
 </section>
 
 <footer class="footer">
-  <div class="container">
-    <div class="footer-logo">⚽ WORLD PULSE</div>
-    <p>FIFA World Cup 2026 · Live data via TheSportsDB · Built for football fans</p>
-  </div>
+  <span>⚽ WORLD PULSE · FIFA WORLD CUP 2026</span>
+  <span>Data: TheSportsDB (free) · Updated Jul 6 2026</span>
 </footer>
 
-<!-- Three.js loaded BEFORE app.js, no defer/async so it's sync -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

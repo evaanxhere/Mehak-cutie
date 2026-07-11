@@ -6,105 +6,113 @@
 <title>World Pulse — FIFA World Cup 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:ital,wght@0,200;0,300;0,400;0,500;0,600;1,200;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
+<!-- MAGNETIC CURSOR -->
+<div id="cursor-outer"></div>
+<div id="cursor-inner"></div>
+<div id="cursor-text"></div>
+
 <!-- NAV -->
-<header class="nav" id="nav">
-  <a class="nav-logo" href="#">⚽ WORLD PULSE</a>
-  <nav class="nav-links">
-    <a href="#scores">Scores</a>
-    <a href="#bracket">Bracket</a>
-    <a href="#groups">Groups</a>
-    <a href="#fixtures">Fixtures</a>
-  </nav>
-  <div class="nav-status">
-    <span class="status-dot" id="statusDot"></span>
-    <span id="statusText">—</span>
+<nav class="nav" id="nav">
+  <div class="nav-logo">WORLD<span>PULSE</span></div>
+  <div class="nav-center" id="navCenter">
+    <span>Round of 16</span>
+    <span class="nav-dot"></span>
+    <span id="navDate">Jul 6 2026</span>
   </div>
-</header>
+  <div class="nav-right">
+    <span class="live-dot" id="liveDot"></span>
+    <span id="liveLabel">Live</span>
+  </div>
+</nav>
 
-<!-- HERO — stadium scoreboard feel -->
-<section class="hero" id="hero">
+<!-- TICKER -->
+<div class="ticker-rail" id="tickerRail">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ═══ PANEL 1: HERO ═══ -->
+<section class="panel panel-hero" id="panelHero">
   <canvas id="ballCanvas"></canvas>
-  <div class="hero-body">
-    <div class="hero-left">
-      <p class="hero-eyebrow">FIFA World Cup 2026</p>
-      <h1 class="hero-title">
-        <span class="ht-line">THE</span>
-        <span class="ht-line ht-big">WORLD</span>
-        <span class="ht-line ht-italic">PLAYS.</span>
-      </h1>
-      <div class="hero-meta">
-        <div class="hm-item"><span class="hm-num" data-count="48">0</span><span class="hm-label">Nations</span></div>
-        <div class="hm-item"><span class="hm-num" data-count="104">0</span><span class="hm-label">Matches</span></div>
-        <div class="hm-item"><span class="hm-num" data-count="16">0</span><span class="hm-label">Venues</span></div>
-      </div>
-      <div class="hero-actions">
-        <a href="#scores" class="btn-main">Live Scores</a>
-        <a href="#bracket" class="btn-line">R16 Bracket</a>
-      </div>
+  <div class="hero-text">
+    <div class="hero-sup" data-reveal>FIFA · WORLD CUP · 2026</div>
+    <h1 class="hero-h" data-reveal data-delay="120">
+      <span class="h-row">THE</span>
+      <span class="h-row h-stroke">WORLD</span>
+      <span class="h-row h-gold">PLAYS.</span>
+    </h1>
+    <div class="hero-body-text" data-reveal data-delay="280">
+      <p>48 nations. 104 matches. 3 countries.<br/>One trophy. Round of 16 underway.</p>
     </div>
-    <div class="hero-right">
-      <!-- canvas ball renders here -->
-      <p class="drag-hint">drag to rotate</p>
+    <div class="hero-cta-row" data-reveal data-delay="400">
+      <a href="#panelScores" class="cta-main magnet" data-magnet>Scores</a>
+      <a href="#panelBracket" class="cta-ghost magnet" data-magnet>R16 Bracket</a>
     </div>
   </div>
-  <!-- Scoreboard strip at bottom of hero -->
-  <div class="scoreboard-strip" id="scoreboardStrip"></div>
-</section>
-
-<!-- LIVE SCORES -->
-<section class="section" id="scores">
-  <div class="wrap">
-    <div class="sec-label">
-      <span class="eyebrow">Match Center</span>
-      <h2 class="sec-h">Live &amp; Recent Results</h2>
-      <p class="sec-sub" id="scoresSub"></p>
-    </div>
-    <div class="cards-grid" id="scoresGrid"></div>
+  <div class="hero-scroll-cue">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
   </div>
 </section>
 
-<!-- R16 BRACKET -->
-<section class="section alt" id="bracket">
-  <div class="wrap">
-    <div class="sec-label">
-      <span class="eyebrow">Round of 16</span>
-      <h2 class="sec-h">Bracket</h2>
+<!-- ═══ PANEL 2: LIVE SCORES ═══ -->
+<section class="panel panel-scores" id="panelScores">
+  <div class="panel-inner">
+    <div class="panel-label" data-reveal>
+      <span class="panel-num">01</span>
+      <span>Match Center</span>
     </div>
+    <h2 class="panel-h" data-reveal data-delay="80">Live &amp; Recent<br/><em>Results</em></h2>
+    <p class="panel-sub" id="scoresSub" data-reveal data-delay="140"></p>
+    <div class="scores-grid" id="scoresGrid"></div>
+  </div>
+</section>
+
+<!-- ═══ PANEL 3: BRACKET ═══ -->
+<section class="panel panel-bracket panel-dark" id="panelBracket">
+  <div class="panel-inner">
+    <div class="panel-label" data-reveal>
+      <span class="panel-num">02</span>
+      <span>Knockout Stage</span>
+    </div>
+    <h2 class="panel-h" data-reveal data-delay="80">Round of 16<br/><em>Bracket</em></h2>
     <div class="bracket-grid" id="bracketGrid"></div>
   </div>
 </section>
 
-<!-- GROUPS -->
-<section class="section" id="groups">
-  <div class="wrap">
-    <div class="sec-label">
-      <span class="eyebrow">Group Stage — Complete</span>
-      <h2 class="sec-h">Standings</h2>
+<!-- ═══ PANEL 4: GROUPS ═══ -->
+<section class="panel panel-groups" id="panelGroups">
+  <div class="panel-inner">
+    <div class="panel-label" data-reveal>
+      <span class="panel-num">03</span>
+      <span>Group Stage · Complete</span>
     </div>
-    <div class="gtabs" id="groupTabs"></div>
+    <h2 class="panel-h" data-reveal data-delay="80">Group<br/><em>Standings</em></h2>
+    <div class="gtabs" id="groupTabs" data-reveal data-delay="160"></div>
     <div id="groupPanel"></div>
   </div>
 </section>
 
-<!-- FIXTURES -->
-<section class="section alt" id="fixtures">
-  <div class="wrap">
-    <div class="sec-label">
-      <span class="eyebrow">Coming Up</span>
-      <h2 class="sec-h">Upcoming Fixtures</h2>
+<!-- ═══ PANEL 5: FIXTURES ═══ -->
+<section class="panel panel-fixtures panel-dark" id="panelFixtures">
+  <div class="panel-inner">
+    <div class="panel-label" data-reveal>
+      <span class="panel-num">04</span>
+      <span>Coming Up</span>
     </div>
-    <div id="fixturesList"></div>
+    <h2 class="panel-h" data-reveal data-delay="80">Upcoming<br/><em>Fixtures</em></h2>
+    <div class="fx-list" id="fixturesList"></div>
   </div>
 </section>
 
+<!-- ═══ FOOTER ═══ -->
 <footer class="footer">
-  <span>⚽ WORLD PULSE · FIFA WORLD CUP 2026</span>
-  <span>Data: TheSportsDB (free) · Updated Jul 6 2026</span>
+  <span class="footer-logo">⚽ WORLDPULSE</span>
+  <span>FIFA World Cup 2026 · Jul 6 2026</span>
 </footer>
 
 <script src="app.js"></script>

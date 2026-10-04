@@ -1,0 +1,210 @@
+/* ─────────────────────────────────────────
+   for Mehak.
+   Rose dust · mauve · one blush moment
+───────────────────────────────────────── */
+:root {
+  --dust:    #F5EAEA;
+  --dust2:   #EDE0E0;
+  --mauve:   #2D1B2E;
+  --mauve2:  #4A3050;
+  --mauve3:  #7A6080;
+  --blush:   #C47A7A;
+  --blush2:  #A85C5C;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--dust);
+  color: var(--mauve);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── PETALS CANVAS ── */
+#petals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+/* ── OPENING ── */
+.open {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.open-name {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(80px, 18vw, 200px);
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--mauve);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1.4s cubic-bezier(.16,1,.3,1),
+              transform 1.4s cubic-bezier(.16,1,.3,1);
+}
+.open-name.in { opacity: 1; transform: none; }
+
+.open-line {
+  margin-top: 28px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 3vw, 26px);
+  color: var(--mauve3);
+  letter-spacing: 0.01em;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(.16,1,.3,1) .6s;
+}
+.open-line.in { opacity: 1; }
+
+/* Scroll nudge */
+.open::after {
+  content: '';
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, var(--mauve3), transparent);
+  animation: nudge 2.5s ease-in-out infinite 2s;
+  opacity: 0;
+}
+.open.in::after { opacity: 1; }
+@keyframes nudge {
+  0%, 100% { transform: translateX(-50%) scaleY(0.3); opacity: 0; transform-origin: top; }
+  50%       { transform: translateX(-50%) scaleY(1);   opacity: 1; }
+}
+
+/* ── CHAPTERS ── */
+.chapter {
+  position: relative;
+  z-index: 1;
+  padding: 100px 24px;
+  display: flex;
+  justify-content: center;
+}
+.chapter-alt { background: var(--dust2); }
+
+.chapter-inner {
+  max-width: 560px;
+  width: 100%;
+}
+
+/* Big serif lines */
+.big-line {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--mauve);
+  margin-bottom: 36px;
+}
+.big-line.italic { font-style: italic; font-weight: 300; }
+
+/* The one blush line — used once */
+.accent-line {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(28px, 4.5vw, 48px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--blush2);
+  margin-bottom: 36px;
+}
+
+/* Body prose */
+.body-text {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.85;
+  color: var(--mauve2);
+  max-width: 480px;
+}
+
+/* ── CLOSING ── */
+.close {
+  position: relative;
+  z-index: 1;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 24px;
+  background: var(--mauve);
+}
+.close-inner {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+.close-small {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: rgba(245,234,234,.4);
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+.close-big {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(28px, 5vw, 52px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--dust);
+  margin-bottom: 48px;
+}
+.close-sig {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(18px, 2.5vw, 24px);
+  color: var(--blush);
+  letter-spacing: 0.04em;
+}
+
+/* ── REVEAL UTIL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 1s cubic-bezier(.16,1,.3,1),
+              transform 1s cubic-bezier(.16,1,.3,1);
+}
+.reveal.in { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .chapter { padding: 72px 24px; }
+  .open { min-height: 95vh; }
+  .close { min-height: 70vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

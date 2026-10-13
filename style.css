@@ -204,3 +204,27 @@ body {
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after { animation-duration:1ms!important; transition-duration:1ms!important; }
 }
+
+/* RAGEBAIT lines — lighter, slightly playful */
+.rb {
+  display: block;
+  margin-top: 16px;
+  font-style: italic;
+  color: var(--text3);
+  font-size: .92em;
+  line-height: 1.75;
+  padding-left: 14px;
+  border-left: 1px solid var(--rose2);
+}
+
+/* PS line in close */
+.c-ps {
+  margin-top: 32px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text3);
+  font-style: italic;
+  letter-spacing: .03em;
+  line-height: 1.7;
+}
